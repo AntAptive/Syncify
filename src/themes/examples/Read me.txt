@@ -1,0 +1,7 @@
+Please note that the example themes in this folder are for **EXAMPLE ONLY**.
+The example themes demonstrate Syncify's capabilities and are intended for:
+- Learning purposes
+- Private/personal use
+- Reference for creating your own themes
+
+If you plan to distribute or use these themes publicly, ensure they comply with Spotify's Design & Branding Guidelines. (https://developer.spotify.com/documentation/design)
