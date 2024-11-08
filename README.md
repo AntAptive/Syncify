@@ -8,6 +8,10 @@ An open-source "Now Playing" widget that displays what you're currently playing 
 
 ### [Check out my other projects!](https://antaptive.com/projects)
 
+### Consider supporting the creator!
+[Patreon](https://www.patreon.com/c/antaptive) | [Kofi](https://ko-fi.com/antaptive) | [Merch Store](http://shop.antaptive.com)
+
+
 ## Themes
 ### Default<br>
 Shows cover art and scrolls if text is too long<br>
