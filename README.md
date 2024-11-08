@@ -20,6 +20,8 @@ Scrolls if text is too long<br>
 ## Setup & Usage Guide
 **Syncify requires [Node.js](https://nodejs.org/en) to run and [Git](https://git-scm.com/downloads) to build. Please download both before continuing.**
 
+**Syncify requires 75 MB of disk space**.
+
 ### Initial Setup
 **You will only have to do this once!**<br/>
 **Stuck? Need a video instead? [Click here](https://www.youtube.com/watch?v=1YG_Po0OduQ) for a full walkthrough.**
