@@ -1,4 +1,4 @@
-![Syncify Banner](/SyncifyBanner.png)
+![Syncify Banner](/readme/SyncifyBanner.png)
 # Syncify
 An open-source "Now Playing" widget that displays what you're currently playing on Spotify®
 
@@ -8,6 +8,14 @@ An open-source "Now Playing" widget that displays what you're currently playing 
 
 ### [Check out my other projects!](https://antaptive.com/projects)
 
+## Themes
+### Default<br>
+Shows cover art and scrolls if text is too long<br>
+![Default Theme](/readme/DefaultExample.png)<br>![Default Theme](/readme/DefaultExample2.png)<br>
+
+### Minimal<br>
+Scrolls if text is too long<br>
+![Minimal Theme](/readme/MinimalExample.png)<br>![Minimal Theme](/readme/MinimalExample2.png)<br>
 
 ## Setup & Usage Guide
 **Syncify requires [Node.js](https://nodejs.org/en) to run and [Git](https://git-scm.com/downloads) to build. Please download both before continuing.**
@@ -56,6 +64,7 @@ All of Syncify's config is in `config.env`, which is generated after running `np
 * **CLIENT_ID** & **CLIENT_SECRET**: Your Spotify API credentials. See above in Setup & Usage Guide for how to create a Spotify app and figure out what to put here.
 * **PORT**: The port on your machine that Syncify will run on. Must be a number between 1024 and 65535.
 * **THEME**: What theme file (in [src/themes](/src/themes)) Syncify will serve.
+    * **TIP:** While Syncify should handle case-insensitivity, ensure **THEME** matches the filename’s exact case to avoid IDE errors.
 * **VERBOSITY**: The level of messages sent to the console. 
 	* **0**: Critical messages only
     * **1** *(Default)*: Errors
