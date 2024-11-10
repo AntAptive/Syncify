@@ -255,6 +255,19 @@ app.listen(port, async () => {
   // Load environment variables for the Spotify API script
   await spotifyapi.SetConfig(port, CLIENT_ID, CLIENT_SECRET, verbosity);
 
+  try {
+    const updates = checkGitRepoUpdates('./path-to-repo');
+    if (updates.hasUpdates && verbosity >= 2) {
+        console.log(`${yellow}Syncify Update available! Your repository is ${updates.commitsBehinds} commit(s) behind.`, reset);
+        console.log('Latest change:', yellow, updates.latestCommitMessage, reset);
+        console.log('Run "git pull" to update.');
+    } else if (verbosity >= 2) {
+      console.log`${green}Syncify is up-to-date!`, reset;
+    }
+  } catch (error) {
+    if (verbosity >= 1)console.error('Failed to check for updates:', error.message);
+  }
+
   if (verbosity >= 1) console.log(`${green}Server running at http://localhost:${port}`, reset);
   if (verbosity >= 3) console.log(`Theme to serve is ${yellow}${process.env.THEME}${reset}. If another theme is being served, remember to open build.bat or run "npm run build" in the root folder.`);
   if (!existsSync("tokens.json")) {

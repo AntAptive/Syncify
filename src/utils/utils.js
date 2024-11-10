@@ -45,8 +45,43 @@ function ValidateConfig(env) {
   return msg;
 }
 
+function CheckGitRepoUpdates(repoPath) {
+  try {
+      // Change to the repository directory
+      const originalDir = process.cwd();
+      process.chdir(path.resolve(repoPath));
+
+      // Fetch the latest changes from remote
+      execSync('git fetch', { stdio: 'pipe' });
+
+      // Get the number of commits behind remote
+      const behindCount = execSync('git rev-list HEAD..origin/main --count', { 
+          stdio: 'pipe',
+          encoding: 'utf-8'
+      }).trim();
+
+      // Get the latest remote commit message
+      const latestCommit = execSync('git log origin/main -1 --pretty=format:"%s"', {
+          stdio: 'pipe',
+          encoding: 'utf-8'
+      }).trim();
+
+      // Change back to original directory
+      process.chdir(originalDir);
+
+      return {
+          hasUpdates: parseInt(behindCount) > 0,
+          commitsBehinds: parseInt(behindCount),
+          latestCommitMessage: latestCommit
+      };
+  } catch (error) {
+      throw new Error(`Failed to check repository updates: ${error.message}`);
+  }
+}
+
 const utils = {
-  ValidateConfig
+  ValidateConfig,
+  CheckGitRepoUpdates
 };
 
 export default utils;
