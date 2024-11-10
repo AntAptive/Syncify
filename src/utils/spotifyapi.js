@@ -8,7 +8,7 @@ var CLIENT_SECRET;
 var REDIRECT_URI;
 var verbosity;
 
-var noActiveDevicesWarning = 0;
+var noActiveDevicesWarning = false;
 
 async function SetConfig(_port, _clientId, _clientSecret, _verbosity) {
   port = _port;
@@ -129,7 +129,7 @@ async function GetCurrentlyPlaying(tokensFilePath) {
     );
 
     if (response.status === 200 && response.data.item) {
-      noActiveDevicesWarning = 0; // Set this to 0 so the "No active devices" warning can print again
+      noActiveDevicesWarning = false; // Set this to false so the "No active devices" warning can print again
 
       const jsonData = {
         playing: response.data.is_playing,
@@ -140,8 +140,8 @@ async function GetCurrentlyPlaying(tokensFilePath) {
       };
       return jsonData;
     } else if (response.status === 204) {
-      if (noActiveDevicesWarning === 0) {
-        noActiveDevicesWarning = 1;
+      if (noActiveDevicesWarning == false) {
+        noActiveDevicesWarning = true;
         if (verbosity >= 2)
           console.warn(
             "No track is currently playing. No active devices were found."
@@ -149,7 +149,7 @@ async function GetCurrentlyPlaying(tokensFilePath) {
       }
       return nothingPlayingSong;
     } else {
-      noActiveDevicesWarning = 0; // Set this to 0 so the "No active devices" warning can print again
+      noActiveDevicesWarning = false; // Set this to false so the "No active devices" warning can print again
 
       if (verbosity >= 1)
         console.error(

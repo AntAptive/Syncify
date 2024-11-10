@@ -31,7 +31,6 @@ import { existsSync, writeFileSync, readFileSync, writeFile, unlink } from "fs";
 import utils from "./src/utils/utils.js";
 import spotifyapi from "./src/utils/spotifyapi.js";
 import { URLSearchParams } from "url";
-import { createServer as createViteServer } from "vite";
 
 // Load config
 if (!existsSync("./config.env")) {
@@ -114,7 +113,7 @@ var currentSong = {
 
 if (!existsSync("./dist")) {
   console.error(
-    'Failed to start Syncify. The Vite build has not been created. Please run "npm run build" before starting Syncify.'
+    'Failed to start Syncify. The build files have not been created. Please open Build.bat or run "npm run build" before starting Syncify.'
   );
   process.exit(1);
 }
@@ -148,15 +147,6 @@ async function StartInterval() {
     intervalStarted = true;
   }
 }
-
-// Create Vite server in middleware mode
-const vite = await createViteServer({
-  server: { middlewareMode: true },
-  appType: "spa",
-});
-
-// Use vite's connect instance as middleware
-//app.use(vite.middlewares);
 
 // Serve static files from the Vite build output directory
 app.use(express.static(path.join(__dirname, "dist")));
