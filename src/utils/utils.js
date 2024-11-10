@@ -4,12 +4,12 @@ function ValidateConfig(env) {
   let msg = "";
 
   // Check CLIENT_ID
-  if (!CLIENT_ID && CLIENT_ID != "your-client-id-here") {
+  if (!CLIENT_ID || CLIENT_ID == "your-client-id-here") {
     msg += "\nCLIENT_ID must be set.";
   }
 
   // Check CLIENT_SECRET
-  if (!CLIENT_SECRET && CLIENT_SECRET != "your-client-secret-here") {
+  if (!CLIENT_SECRET || CLIENT_SECRET == "your-client-secret-here") {
     msg += "\nCLIENT_SECRET must be set.";
   }
 
