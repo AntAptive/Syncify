@@ -26,9 +26,15 @@ function ValidateConfig(env) {
     THEME.length > 255 || // Greater than 255 characters
     /[<>:"\/\\|?*\x00-\x1F]/.test(THEME) || // Has illegal characters
     THEME.trim() !== THEME || // Starts or ends with spaces
-    !THEME.trim() // Is whitespace
+    !THEME.trim() || // Is whitespace
+    THEME.includes('.') // Has a period
   ) {
-    msg += "\nTHEME must be a valid filename.";
+    if (THEME.includes('/') || THEME.includes('\\'))
+      msg += "\nTHEME must be a valid filename, and theme files must be in the root of the themes folder.";
+    else if (THEME.includes('.'))
+      msg += "\nTHEME must be a valid filename without periods. (Do not include the file extension)"
+    else
+      msg += "\nTHEME must be a valid filename.";
   }
   
   // Check VERBOSITY
