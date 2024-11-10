@@ -31,7 +31,7 @@ if (existsSync("./config.env")) {
         "  </React.StrictMode>\n"+
         ")"
         writeFileSync("src/main.jsx", content);
-        console.log("Build succeeded.");
+        console.log("Syncify file build succeeded. Vite build running...\n");
         process.exit(0);
     } catch (ex) {
         console.error(
