@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 
 echo Checking for updates...
 echo.
@@ -39,7 +39,7 @@ if %BEHIND% equ 0 (
 
 rem If we're here, there are updates available
 echo.
-echo Updates found^! Your version of Syncify is %BEHIND% commit(s) behind.
+echo Updates found! Your version of Syncify is %BEHIND% commit(s) behind.
 echo.
 
 :confirmation
@@ -68,6 +68,6 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo Update completed successfully! Closing...
-timeout /t 3 >NUL
+echo Update completed successfully!
+pause
 exit /b 0
