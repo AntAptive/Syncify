@@ -33,7 +33,7 @@ for /f %%i in ('git rev-list HEAD..origin/main --count') do set BEHIND=%%i
 if %BEHIND% equ 0 (
     echo.
     echo Syncify is up to date! Closing...
-    timeout /t 3
+    timeout /t 3 >NUL
     exit /b 0
 )
 
