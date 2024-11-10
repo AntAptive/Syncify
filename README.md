@@ -29,24 +29,23 @@ Scrolls if text is too long<br>
 ### Initial Setup
 **You will only have to do this once!**<br/>
 **Stuck? Need a video instead? [Click here](https://www.youtube.com/watch?v=1YG_Po0OduQ) for a full walkthrough.**
-1. Clone the repo: `git clone https://github.com/AntAptive/Syncify`
-2. Enter the newly created folder and install all necessary packages: `cd Syncify && npm install`
-3. Build the project: Open `build.bat` or run `npm run build`
+1. Clone the repo and install all necessary packages: `git clone https://github.com/AntAptive/Syncify && cd syncify && npm install`
+2. Build the project: Open `build.bat` or run `npm run build`
     * **NOTE:** You will need to do this every time you make changes to your config or Syncify's code.
 	* This will create your `config.env` file, which you can find in the root of the project directory.
-4. Go to your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and create a new app.
+3. Go to your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and create a new app.
 	1. Click **Create App**.
 	2. Set **App name** & **App description** to whatever you want.
 	3. Add the **Redirect URI**: `http://localhost:PORT/callback`, **PORT** being the port which you want Syncify to use on your machine. (The default port is 8888. You can change it in your `config.env` file)
 	4. Agree to Spotify's Developer ToS and Design Guidelines.
 	5. Click **Save**, then **Settings** at the top-right.
 	6. Copy the **Client ID** and replace `your-client-id-here` in `config.env` with your client ID. Do the same with your client secret by clicking **View client secret**.
-5. Populate `config.env` with your credentials and preferences, then build the project again: Open `build.bat` or run `npm run build`
+4. Populate `config.env` with your credentials and preferences, then build the project again: Open `build.bat` or run `npm run build`
     * The reason we're building again is to generate essential files for Syncify that rely on information in `config.env`.
 	* **NOTE:** Ensure your `config.env` is configured properly or you will encounter issues.
-6. Open `start.bat` to start Syncify.
-7. Syncify will now say `Please visit http://localhost:PORT/login to authenticate with Spotify`. Visit the supplied link in a web browser to complete authentication with Spotify.
-8. Visit `http://localhost:PORT` in a web browser or an OBS browser source to begin using Syncify.
+5. Open `start.bat` to start Syncify.
+6. Syncify will now say `Please visit http://localhost:PORT/login to authenticate with Spotify`. Visit the supplied link in a web browser to complete authentication with Spotify.
+7. Visit `http://localhost:PORT` in a web browser or an OBS browser source to begin using Syncify.
 
 Syncify can be closed by simply clicking the X button for its command prompt window.
 
