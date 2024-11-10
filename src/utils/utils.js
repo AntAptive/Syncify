@@ -1,3 +1,6 @@
+import { execSync } from "child_process";
+import path from "path";
+
 function ValidateConfig(env) {
   const { CLIENT_ID, CLIENT_SECRET, PORT, THEME, VERBOSITY } = env;
 

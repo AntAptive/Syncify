@@ -256,13 +256,13 @@ app.listen(port, async () => {
   await spotifyapi.SetConfig(port, CLIENT_ID, CLIENT_SECRET, verbosity);
 
   try {
-    const updates = checkGitRepoUpdates('./path-to-repo');
+    const updates = utils.CheckGitRepoUpdates(__dirname);
     if (updates.hasUpdates && verbosity >= 2) {
         console.log(`${yellow}Syncify Update available! Your repository is ${updates.commitsBehinds} commit(s) behind.`, reset);
         console.log('Latest change:', yellow, updates.latestCommitMessage, reset);
         console.log('Run "git pull" to update.');
     } else if (verbosity >= 2) {
-      console.log`${green}Syncify is up-to-date!`, reset;
+      console.log(`${green}Syncify is up-to-date!`, reset);
     }
   } catch (error) {
     if (verbosity >= 1)console.error('Failed to check for updates:', error.message);
