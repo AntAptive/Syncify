@@ -246,7 +246,7 @@ app.listen(port, async () => {
   await spotifyapi.SetConfig(port, CLIENT_ID, CLIENT_SECRET, verbosity);
 
   if (verbosity >= 1) console.log(`Server running at http://localhost:${port}`);
-  if (verbosity >= 3) console.log(`Theme to serve is ${process.env.THEME}. If another theme is being served, remember to run "npm run build" in the root folder.`);
+  if (verbosity >= 3) console.log(`Theme to serve is ${process.env.THEME}. If another theme is being served, remember to open build.bat or run "npm run build" in the root folder.`);
   if (!existsSync("tokens.json")) {
     console.log(
       `Please visit http://localhost:${port}/login to authenticate with Spotify`
