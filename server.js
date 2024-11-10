@@ -260,7 +260,7 @@ app.listen(port, async () => {
     if (updates.hasUpdates && verbosity >= 2) {
         console.log(`${yellow}Syncify Update available! Your repository is ${updates.commitsBehinds} commit(s) behind.`, reset);
         console.log('Latest change:', yellow, updates.latestCommitMessage, reset);
-        console.log('Run "git pull" to update.');
+        console.log('Open update.bat or run "git pull" to update.');
     } else if (verbosity >= 2) {
       console.log(`${green}Syncify is up-to-date!`, reset);
     }
