@@ -2,21 +2,28 @@ import dotenv from "dotenv";
 import { existsSync, writeFileSync, unlink } from "fs";
 import utils from "./src/utils/utils.js";
 
+const red = "\x1b[31m";
+const green = "\x1b[32m";
+const yellow = "\x1b[33m";
+const reset = "\x1b[0m";
+
 if (existsSync("./config.env")) {
     dotenv.config({ path: "./config.env" });
     try {
         const validConf = utils.ValidateConfig(process.env);
         if (validConf != "") {
-          console.error(
-            "Error starting Syncify: Config.env could not be validated. ",
-            validConf
+          console.log(
+            `${red}Build encountered an error: Config.env could not be validated. `,
+            validConf,
+            reset
           );
           process.exit(1);
         }
         if (!existsSync(`./src/themes/${process.env.THEME}.jsx`)) {
-            console.error(
-              `Build encountered an error: ${process.env.THEME}.jsx does not exist.`,
-              `This is because your THEME variable (${process.env.THEME}) in config.env does not match the name of any theme files in src/themes.`
+            console.log(
+              `${red}Build encountered an error: ${process.env.THEME}.jsx does not exist.`,
+              `This is because your THEME variable (${process.env.THEME}) in config.env does not match the name of any theme files in src/themes.`,
+              reset
             );
             process.exit(1);  
         }
@@ -31,15 +38,17 @@ if (existsSync("./config.env")) {
         "  </React.StrictMode>\n"+
         ")"
         writeFileSync("src/main.jsx", content);
-        console.log("Syncify file build succeeded. Vite build running...\n");
+        
+        console.log(`${green}Syncify file build succeeded!\n${yellow}Vite build running...\n${reset}`);
         process.exit(0);
     } catch (ex) {
-        console.error(
-          "Error starting Syncify: Config.env could not be loaded. The file may be corrupted.",
+        console.log(
+          `${red}Error starting Syncify: Config.env could not be loaded. The file may be corrupted.`,
           "\nIn case you'd like to attempt to repair your config file, Syncify has left the file untouched.",
           "\nIf you cannot repair the file, please delete it and reobtain your API credentials at https://developer.spotify.com/dashboard.",
           "\n----\nTechnical mumbo jumbo:\n",
-          ex.message
+          ex.message,
+          reset
         );
         process.exit(1);
     }
@@ -48,7 +57,10 @@ else {
     unlink("tokens.json", (err) => {
       // Delete tokens.json as they're likely not usable anymore.
       if (err) {
-        console.error("Failed to delete tokens.json: ", err);
+        console.log(
+          `${red}Failed to delete tokens.json: `,
+          err,
+          reset);
         return;
       }
     });
@@ -65,14 +77,16 @@ else {
       // Create a config file if one does not exist
       writeFileSync("./config.env", defaultConfig, { encoding: "utf8" });
 
-      console.warn(
-        "Config.env was not found, and one has been created. Please populate the file with your configuration, then restart Syncify."
+      console.log(
+        `${yellow}Config.env was not found, and one has been created. Please populate the file with your configuration, then restart Syncify.`,
+        reset
       );
     } catch (err) {
-      console.error(
-        "Config.env was not found, and one could not be created.\n",
+      console.log(
+        `${red}Config.env was not found, and one could not be created.\n`,
         err,
-        "\nTip: Please ensure Syncify is in a location with write permissions."
+        "\nTip: Please ensure Syncify is in a location with write permissions.",
+        reset
       );
     }
     process.exit(1);
