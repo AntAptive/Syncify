@@ -64,6 +64,9 @@ if %errorlevel% neq 0 (
     echo Error: Failed to update Syncify.
     echo This might be due to local changes conflicting with updates.
     echo If this is a theme file, please rename it to a name not conflicting with theme files included with Syncify.
+    echo If these are code files and you are not a developer, please contact AntAptive or open an issue on the repo.
+    echo.
+    echo If you're unable to resolve the issues above, please reinstall Syncify in a blank folder.
     pause
     exit /b 1
 )
