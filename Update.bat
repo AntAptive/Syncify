@@ -63,6 +63,7 @@ if %errorlevel% neq 0 (
     echo.
     echo Error: Failed to update Syncify.
     echo This might be due to local changes conflicting with updates.
+    echo If this is a theme file, please rename it to a name not conflicting with theme files included with Syncify.
     pause
     exit /b 1
 )
