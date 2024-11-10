@@ -32,12 +32,17 @@ import utils from "./src/utils/utils.js";
 import spotifyapi from "./src/utils/spotifyapi.js";
 import { URLSearchParams } from "url";
 
+const red = "\x1b[31m";
+const green = "\x1b[32m";
+const yellow = "\x1b[33m";
+const reset = "\x1b[0m";
+
 // Load config
 if (!existsSync("./config.env")) {
   unlink("tokens.json", (err) => {
     // Delete tokens.json as they're likely not usable anymore.
     if (err) {
-      console.error("Failed to delete tokens.json: ", err);
+      console.error(`${red}Failed to delete tokens.json: `, err, reset);
       return;
     }
   });
@@ -55,13 +60,14 @@ if (!existsSync("./config.env")) {
     writeFileSync("./config.env", defaultConfig, { encoding: "utf8" });
 
     console.warn(
-      "Config.env was not found, and one has been created. Please populate the file with your configuration, then restart Syncify."
+      `${yellow}Config.env was not found, and one has been created. Please populate the file with your configuration, then restart Syncify.`,
+      reset
     );
   } catch (err) {
     console.error(
-      "Config.env was not found, and one could not be created.\n",
+      `${red}Config.env was not found, and one could not be created.\n`,
       err,
-      "\nTip: Please ensure Syncify is in a location with write permissions."
+      `\n${yellow}Tip:${reset} Please ensure Syncify is in a location with write permissions.`
     );
   }
   process.exit(1);
@@ -74,18 +80,20 @@ if (!existsSync("./config.env")) {
     const validConf = utils.ValidateConfig(process.env);
     if (validConf != "") {
       console.error(
-        "Error starting Syncify: Config.env could not be validated. ",
-        validConf
+        `${red}Error starting Syncify: Config.env could not be validated. `,
+        validConf,
+        reset
       );
       process.exit(1);
     }
   } catch (ex) {
     console.error(
-      "Error starting Syncify: Config.env could not be loaded. The file may be corrupted.",
+      `${red}Error starting Syncify: Config.env could not be loaded. The file may be corrupted.`,
       "\nIn case you'd like to attempt to repair your config file, Syncify has left the file untouched.",
       "\nIf you cannot repair the file, please delete it and reobtain your API credentials at https://developer.spotify.com/dashboard.",
       "\n----\nTechnical mumbo jumbo:\n",
-      ex.message
+      ex.message,
+      reset
     );
     process.exit(1);
   }
@@ -113,7 +121,8 @@ var currentSong = {
 
 if (!existsSync("./dist")) {
   console.error(
-    'Failed to start Syncify. The build files have not been created. Please open Build.bat or run "npm run build" before starting Syncify.'
+    `${red}Failed to start Syncify. The build files have not been created. Please open Build.bat or run "npm run build" before starting Syncify.`,
+    reset
   );
   process.exit(1);
 }
@@ -138,7 +147,7 @@ async function StartInterval() {
             lastSong = currentSong;
             if (!currentSong.stopped && verbosity >= 3) {
               console.log(
-                `New song: ${currentSong.artists[0].name} - ${currentSong.song}`
+                `${green}New song:${reset} ${currentSong.artists[0].name} - ${currentSong.song}`
               );
             }
           }
@@ -174,19 +183,20 @@ app.get("/callback", async (req, res) => {
 
     writeFile("tokens.json", jsonString, (err) => {
       if (err) {
-        console.error("Error writing tokens.json: ", err);
+        console.error(`${red}Error writing tokens.json: `, err, reset);
       } else {
-        if (verbosity >= 3) console.log("tokens.json successfully saved.");
+        if (verbosity >= 3) console.log(`${green}tokens.json successfully saved.`, reset);
       }
     });
 
     // Start polling for currently playing song
     StartInterval();
 
+    if (verbosity >= 3) console.log(`${green}Successfully authenticated with Spotify!`, reset);
     res.send("Successfully authenticated! You can close this window.");
   } catch (error) {
     if (verbosity >= 1)
-      console.error("Error getting access token:", error.response.data);
+      console.error(`${red}Error getting access token:`, error.response.data, reset);
     res.send(
       "Error getting access token. Check Syncify console for more info."
     );
@@ -214,7 +224,7 @@ app.get("/api/getsong", (req, res) => {
   try {
     res.json(currentSong);
   } catch (error) {
-    console.error("Server error:", error);
+    console.error(`${red}Server error:`, error, reset);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -236,7 +246,7 @@ async function LoadToken() {
     // Start polling for currently playing song
     StartInterval();
   } catch (err) {
-    if (verbosity >= 1) console.error("Failed to read from tokens.json: ", err);
+    if (verbosity >= 1) console.error(`${red}Failed to read from tokens.json: `, err, reset);
     process.exit();
   }
 }
@@ -245,11 +255,12 @@ app.listen(port, async () => {
   // Load environment variables for the Spotify API script
   await spotifyapi.SetConfig(port, CLIENT_ID, CLIENT_SECRET, verbosity);
 
-  if (verbosity >= 1) console.log(`Server running at http://localhost:${port}`);
-  if (verbosity >= 3) console.log(`Theme to serve is ${process.env.THEME}. If another theme is being served, remember to open build.bat or run "npm run build" in the root folder.`);
+  if (verbosity >= 1) console.log(`${green}Server running at http://localhost:${port}`, reset);
+  if (verbosity >= 3) console.log(`Theme to serve is ${yellow}${process.env.THEME}${reset}. If another theme is being served, remember to open build.bat or run "npm run build" in the root folder.`);
   if (!existsSync("tokens.json")) {
     console.log(
-      `Please visit http://localhost:${port}/login to authenticate with Spotify`
+      `${yellow}Please visit http://localhost:${port}/login to authenticate with Spotify`,
+      reset
     );
   } else {
     LoadToken();
