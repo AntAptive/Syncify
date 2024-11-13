@@ -53,7 +53,7 @@ if (!existsSync("./config.env")) {
       "CLIENT_SECRET=your-client-secret-here",
       "PORT=8888",
       "THEME=Default",
-      "VERBOSITY=1",
+      "VERBOSITY=2",
     ].join("\n");
 
     // Create a config file if one does not exist
@@ -268,8 +268,22 @@ app.listen(port, async () => {
     if (verbosity >= 1)console.error('Failed to check for updates:', error.message);
   }
 
+  if (verbosity >= 3) console.log(
+    `\n----------\n${yellow}WARN:${reset} You are currently running Syncify with a verbosity level of ${verbosity}.\n` +
+      "For content creators, it is recommended to keep your verbosity level (set in config.env) lower than 3, as levels of 3 or higher may output sensitive information to the console.\n" +
+      "This functionality is intentional for debugging purposes.\n" +
+      `${yellow}If you are streaming, ${red}PLEASE SET YOUR VERBOSITY TO LESS THAN 3!` +
+      reset +
+      "\n----------\n"
+  );
+
   if (verbosity >= 1) console.log(`${green}Server running at http://localhost:${port}`, reset);
+
+  // Simple message for those with a verbosity level of 0.
+  if (verbosity == 0) console.log(`${green}Syncify is running.`, reset);
+
   if (verbosity >= 3) console.log(`Theme to serve is ${yellow}${process.env.THEME}${reset}. If another theme is being served, remember to open build.bat or run "npm run build" in the root folder.`);
+
   if (!existsSync("tokens.json")) {
     console.log(
       `${yellow}Please visit http://localhost:${port}/login to authenticate with Spotify`,

@@ -71,7 +71,7 @@ else {
         "CLIENT_SECRET=your-client-secret-here",
         "PORT=8888",
         "THEME=Default",
-        "VERBOSITY=1",
+        "VERBOSITY=2",
       ].join("\n");
 
       // Create a config file if one does not exist

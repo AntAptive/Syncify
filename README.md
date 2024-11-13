@@ -73,6 +73,6 @@ All of Syncify's config is in `config.env`, which is generated after running `np
     * **TIP:** While Syncify should handle case-insensitivity, ensure **THEME** matches the filename’s exact case to avoid IDE errors.
 * **VERBOSITY**: The level of messages sent to the console. 
 	* **0**: Critical messages only
-    * **1** *(Default)*: Errors
-	* **2**: Important info
+    * **1**: Errors
+	* **2** *(Default)*: Important info
 	* **3**: Debug | **NOTE:** A verbosity level of 3 or higher may output sensitive information to the console and is intended for developers and advanced users only. **DO NOT** use level 3 if you are a streamer.
