@@ -109,6 +109,9 @@ const verbosity = process.env.VERBOSITY;
 // Var for if polling has started for the currently playing song
 var intervalStarted = false;
 
+// Var for if the current song has been set manually via the setsong API endpoint
+var manualSong = false;
+
 // Var that houses the info for the currently playing song
 var currentSong = {
   playing: false,
@@ -142,9 +145,11 @@ async function StartInterval() {
       spotifyapi
         .GetCurrentlyPlaying(path.resolve(__dirname, "./tokens.json"))
         .then((data) => {
+          if (manualSong == true && data.song == lastSong.song && data.artists[0].name == lastSong.artists[0].name) return; // Return if a manual song is set and there is not a new Spotify song
           currentSong = data;
-          if (currentSong.song != lastSong.song) {
+          if (currentSong.song != lastSong.song && currentSong.artists[0].name != lastSong.artists[0].name) { // If the current song does not match the last song...
             lastSong = currentSong;
+            manualSong = false;
             if (!currentSong.stopped && verbosity >= 3) {
               console.log(
                 `${green}New song:${reset} ${currentSong.artists[0].name} - ${currentSong.song}`
@@ -226,6 +231,88 @@ app.get("/api/getsong", (req, res) => {
   } catch (error) {
     console.error(`${red}Server error:`, error, reset);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// API endpoint to set the currently playing song
+app.use(express.json());
+app.post('/api/setsong', (req, res) => {
+  try {
+    const data = JSON.parse(req.body.body);
+    if (verbosity >= 3) console.log("Set song received:", data);
+
+    // Check if request is valid
+    if (!data?.hasOwnProperty("playing")) {
+      res.status(422).json({
+        message: "Syncify: Set song denied",
+        details: "No playing status",
+      });
+      return;
+    } else if (!data?.hasOwnProperty("stopped")) {
+      res.status(422).json({
+        message: "Syncify: Set song denied",
+        details: "No stopped status",
+      });
+      return;
+    } else if (!data?.hasOwnProperty("song")) {
+      res.status(422).json({
+        message: "Syncify: Set song denied",
+        details: "No song title",
+      });
+      return;
+    } else if (!data?.hasOwnProperty("artists")) {
+      res.status(422).json({
+        message: "Syncify: Set song denied",
+        details: "No artists array",
+      });
+      return;
+    } else if (!data?.hasOwnProperty("firstArtist")) {
+      res.status(422).json({
+        message: "Syncify: Set song denied",
+        details: "No first artist",
+      });
+      return;
+    } else if (!data?.hasOwnProperty("coverArtUrl")) {
+      res.status(422).json({
+        message: "Syncify: Set song denied",
+        details: "No cover art URL",
+      });
+      return;
+    }
+
+    if (data?.hasOwnProperty("artists")) {
+      data.artists.forEach((artist) => {
+        if (!artist?.hasOwnProperty("name")) {
+          res.status(422).json({
+            message: "Syncify: Set song denied",
+            details: "No artist name for one or more artists",
+          });
+          return;
+        }
+      });
+    }
+
+    manualSong = true;
+    currentSong = data;
+
+    if (!currentSong.stopped && verbosity >= 3) {
+      console.log(
+        `${green}New song (manual):${reset} ${currentSong.artists[0].name} - ${currentSong.song}`
+      );
+    }
+
+    res.status(200).json({
+      message: 'Syncify: Set song received successfully',
+      receivedData: data
+    });
+  } catch (error) {
+    if (verbosity >= 1) console.log(`${red}ERROR:${reset}Syncify received a set song command but failed to handle it.`);
+    if (verbosity >= 3) console.log(error.message);
+
+    res.status(400).json({
+      error: 'Syncify: Failed to process set song request',
+      details: 'Internal server error'
+    });
   }
 });
 
