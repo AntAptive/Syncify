@@ -78,3 +78,8 @@ All of Syncify's config is in `config.env`, which is generated after running `np
     * **1**: Errors
 	* **2** *(Default)*: Important info
 	* **3**: Debug | **NOTE:** A verbosity level of 3 or higher may output sensitive information to the console and is intended for developers and advanced users only. **DO NOT** use level 3 if you are a streamer.
+
+## Using Syncify with other platforms
+Syncify primarily uses the Spotify API to get its information. However, Syncify can be used with other platforms by utilizing the [setsong API endpoint](https://github.com/AntAptive/Syncify/wiki/API#apisetsong).
+
+This method is for advanced users. Please feel free to [open an issue](https://github.com/AntAptive/Syncify/issues/new) to request native support for a platform.
