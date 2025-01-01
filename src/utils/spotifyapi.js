@@ -26,6 +26,8 @@ async function SetConfig(_port, _clientId, _clientSecret, _verbosity) {
 
 var nothingPlayingSong;
 
+var lastPolledSong;
+
 let npsInterval = setInterval(() => {
   if (port) {
     nothingPlayingSong = {
@@ -144,6 +146,7 @@ async function GetCurrentlyPlaying(tokensFilePath) {
         firstArtist: response.data.item.artists[0].name,
         coverArtUrl: response.data.item.album.images[0].url, // Largest size
       };
+      lastPolledSong = jsonData;
       return jsonData;
     } else if (response.status === 204) {
       if (noActiveDevicesWarning == false) {
@@ -160,16 +163,16 @@ async function GetCurrentlyPlaying(tokensFilePath) {
 
       if (verbosity >= 1)
         console.error(
-          `${red}Failed to get currently playing song. Status code was `,
+          `${red}Failed to get currently playing song. Status code was`,
           response.status,
           reset
         );
-      return nothingPlayingSong;
+      return lastPolledSong ? lastPolledSong : nothingPlayingSong;
     }
   } catch (ex) {
     if (verbosity >= 1)
-      console.error(`${red}Error getting currently playing song: `, ex.message, reset);
-    return nothingPlayingSong;
+      console.error(`${red}Error getting currently playing song:`, ex.message, reset);
+    return lastPolledSong ? lastPolledSong : nothingPlayingSong;
   }
 }
 
