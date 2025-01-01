@@ -234,11 +234,13 @@ app.get("/api/getsong", (req, res) => {
   }
 });
 
-// API endpoint to set the currently playing song
+// For POST requests
 app.use(express.json());
+
+// API endpoint to set the currently playing song
 app.post('/api/setsong', (req, res) => {
   try {
-    const data = JSON.parse(req.body.body);
+    const data = req.body;
     if (verbosity >= 3) console.log("Set song received:", data);
 
     // Check if request is valid
@@ -306,7 +308,7 @@ app.post('/api/setsong', (req, res) => {
       receivedData: data
     });
   } catch (error) {
-    if (verbosity >= 1) console.log(`${red}ERROR:${reset}Syncify received a set song command but failed to handle it.`);
+    if (verbosity >= 1) console.log(`${red}ERROR:${reset} Syncify received a set song command but failed to handle it.`);
     if (verbosity >= 3) console.log(error.message);
 
     res.status(400).json({
