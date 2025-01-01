@@ -112,6 +112,9 @@ var intervalStarted = false;
 // Var for if the current song has been set manually via the setsong API endpoint
 var manualSong = false;
 
+// Var for if the play status has been set manually via the setplaystatus API endpoint
+var manualPlayStatus = false;
+
 // Var that houses the info for the currently playing song
 var currentSong = {
   playing: false,
@@ -145,16 +148,30 @@ async function StartInterval() {
       spotifyapi
         .GetCurrentlyPlaying(path.resolve(__dirname, "./tokens.json"))
         .then((data) => {
-          if (manualSong == true && data.song == lastSong.song && data.artists[0].name == lastSong.artists[0].name) return; // Return if a manual song is set and there is not a new Spotify song
+          // If a manual song or manual play status is set and there is not a new Spotify song
+          if ((manualSong == true || manualPlayStatus == true) && data.song == lastSong.song && data.artists[0].name == lastSong.artists[0].name) {
+            // Set the playing status if it doesn't match the last song's playing status
+            // i.e. Replace the playing status after the manual play status has been set at least once
+            if (data.playing != lastSong.playing) {
+              manualPlayStatus = false;
+              currentSong.playing = data.playing;
+            }
+            return;
+          }
           currentSong = data;
           if (currentSong.song != lastSong.song && currentSong.artists[0].name != lastSong.artists[0].name) { // If the current song does not match the last song...
             lastSong = currentSong;
             manualSong = false;
+            manualPlayStatus = false;
             if (!currentSong.stopped && verbosity >= 3) {
               console.log(
                 `${green}New song:${reset} ${currentSong.artists[0].name} - ${currentSong.song}`
               );
             }
+          // If the song wasn't changed, but the last song doesn't match the playing status of the current
+          } else if (lastSong.playing != currentSong.playing) {
+            // This is purely for the setplaystatus endpoint.
+            lastSong.playing = currentSong.playing;
           }
         });
     }, 1000);
@@ -245,36 +262,42 @@ app.post('/api/setsong', (req, res) => {
 
     // Check if request is valid
     if (!data?.hasOwnProperty("playing")) {
+      if (verbosity >= 3) console.log("Set song was denied: No playing status");
       res.status(422).json({
         message: "Syncify: Set song denied",
         details: "No playing status",
       });
       return;
     } else if (!data?.hasOwnProperty("stopped")) {
+      if (verbosity >= 3) console.log("Set song was denied: No stopped status");
       res.status(422).json({
         message: "Syncify: Set song denied",
         details: "No stopped status",
       });
       return;
     } else if (!data?.hasOwnProperty("song")) {
+      if (verbosity >= 3) console.log("Set song was denied: No song title");
       res.status(422).json({
         message: "Syncify: Set song denied",
         details: "No song title",
       });
       return;
     } else if (!data?.hasOwnProperty("artists")) {
+      if (verbosity >= 3) console.log("Set song was denied: No artists array");
       res.status(422).json({
         message: "Syncify: Set song denied",
         details: "No artists array",
       });
       return;
     } else if (!data?.hasOwnProperty("firstArtist")) {
+      if (verbosity >= 3) console.log("Set song was denied: No first artist");
       res.status(422).json({
         message: "Syncify: Set song denied",
         details: "No first artist",
       });
       return;
     } else if (!data?.hasOwnProperty("coverArtUrl")) {
+      if (verbosity >= 3) console.log("Set song was denied: No cover art URL");
       res.status(422).json({
         message: "Syncify: Set song denied",
         details: "No cover art URL",
@@ -285,6 +308,7 @@ app.post('/api/setsong', (req, res) => {
     if (data?.hasOwnProperty("artists")) {
       data.artists.forEach((artist) => {
         if (!artist?.hasOwnProperty("name")) {
+          if (verbosity >= 3) console.log("Set song was denied: No artists name for one or more artists");
           res.status(422).json({
             message: "Syncify: Set song denied",
             details: "No artist name for one or more artists",
@@ -297,9 +321,9 @@ app.post('/api/setsong', (req, res) => {
     manualSong = true;
     currentSong = data;
 
-    if (!currentSong.stopped && verbosity >= 3) {
+    if (verbosity >= 3) {
       console.log(
-        `${green}New song (manual):${reset} ${currentSong.artists[0].name} - ${currentSong.song}`
+        `${green}New song (manual):${reset} ${currentSong.artists[0].name} - ${currentSong.song} ${data.stopped ? "(stopped)" : data.playing ? "" : "(paused)"}`
       );
     }
 
@@ -317,6 +341,55 @@ app.post('/api/setsong', (req, res) => {
     });
   }
 });
+
+// API endpoint to modify the currently playing song's playing status
+app.post("/api/setplaystatus", (req, res) => {
+  try {
+    const data = req.body;
+    if (verbosity >= 3) console.log("Set play status received:", data);
+
+    // Check if request is valid
+    if (!data?.hasOwnProperty("playing")) {
+      if (verbosity >= 3) console.log("Set play status was denied: No playing status");
+      res.status(422).json({
+        message: "Syncify: Set song denied",
+        details: "No playing status",
+      });
+      return;
+    } else if (!data?.hasOwnProperty("stopped")) {
+      if (verbosity >= 3) console.log("Set play status was denied: No stopped status");
+      res.status(422).json({
+        message: "Syncify: Set song denied",
+        details: "No stopped status",
+      });
+      return;
+    }
+
+    manualPlayStatus = true;
+
+    currentSong.playing = data.playing;
+    currentSong.stopped = data.stopped;
+
+    if (verbosity >= 3) {
+      console.log(
+        `${green}New manual play status:  Playing: ${data.playing}  Stopped: ${data.stopped}`
+      );
+    }
+
+  } catch (error) {
+    if (verbosity >= 1)
+      console.log(
+        `${red}ERROR:${reset} Syncify received a set play status command but failed to handle it.`
+      );
+    if (verbosity >= 3) console.log(error.message);
+
+    res.status(400).json({
+      error: "Syncify: Failed to process set play status request",
+      details: "Internal server error",
+    });
+  }
+});
+
 
 // catch-all request for queries that don't match one above
 app.get("*", (req, res) => {
