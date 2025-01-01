@@ -376,6 +376,10 @@ app.post("/api/setplaystatus", (req, res) => {
       );
     }
 
+    res.status(200).json({
+      message: "Syncify: Set play status received successfully",
+      receivedData: data,
+    });
   } catch (error) {
     if (verbosity >= 1)
       console.log(
