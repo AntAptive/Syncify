@@ -193,7 +193,10 @@ app.get("/login", (req, res) => {
     redirect_uri: REDIRECT_URI,
   }).toString();
 
-  console.log(`Sending user to Spotify login page: https://accounts.spotify.com/authorize?${params}`);
+  if (verbosity >= 3)
+    console.log(
+      `Sending user to Spotify login page: https://accounts.spotify.com/authorize?${params}`,
+    );
 
   res.redirect("https://accounts.spotify.com/authorize?" + params);
 });
