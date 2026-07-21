@@ -3,6 +3,9 @@ tokens.json
 archive/
 src/main.jsx
 
+# Archive files
+*.bak
+
 # Dependencies
 node_modules/
 /.pnp

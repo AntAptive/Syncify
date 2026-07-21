@@ -38,7 +38,7 @@ Scrolls if text is too long<br>
 3. Go to your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and create a new app.
 	1. Click **Create App**.
 	2. Set **App name** & **App description** to whatever you want.
-	3. Add the **Redirect URI**: `http://localhost:PORT/callback`, **PORT** being the port which you want Syncify to use on your machine. (The default port is 8888. You can change it in your `config.env` file)
+	3. Add the **Redirect URI**: `http://127.0.0.1:PORT/callback`, **PORT** being the port which you want Syncify to use on your machine. (The default port is 8888. You can change it in your `config.env` file)
 	4. Agree to Spotify's Developer ToS and Design Guidelines.
 	5. Click **Save**, then **Settings** at the top-right.
 	6. Copy the **Client ID** and replace `your-client-id-here` in `config.env` with your client ID. Do the same with your client secret by clicking **View client secret**.
@@ -46,8 +46,8 @@ Scrolls if text is too long<br>
     * The reason we're building again is to generate essential files for Syncify that rely on information in `config.env`.
 	* **NOTE:** Ensure your `config.env` is configured properly or you will encounter issues.
 5. Open `start.bat` to start Syncify.
-6. Syncify will now say `Please visit http://localhost:PORT/login to authenticate with Spotify`. Visit the supplied link in a web browser to complete authentication with Spotify.
-7. Visit `http://localhost:PORT` in a web browser or an OBS browser source to begin using Syncify.
+6. Syncify will now say `Please visit http://127.0.0.1:PORT/login to authenticate with Spotify`. Visit the supplied link in a web browser to complete authentication with Spotify.
+7. Visit `http://127.0.0.1:PORT` in a web browser or an OBS browser source to begin using Syncify.
 
 Syncify can be closed by simply clicking the X button for its command prompt window.
 

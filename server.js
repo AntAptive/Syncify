@@ -115,6 +115,8 @@ var manualSong = false;
 // Var for if the play status has been set manually via the setplaystatus API endpoint
 var manualPlayStatus = false;
 
+var foo = "bar";
+
 // Var that houses the info for the currently playing song
 var currentSong = {
   playing: false,
@@ -136,7 +138,7 @@ if (!existsSync("./dist")) {
 var lastSong = currentSong;
 
 // Spotify API vars
-const REDIRECT_URI = `http://localhost:${port}/callback`;
+const REDIRECT_URI = `http://127.0.0.1:${port}/callback`;
 const SCOPE = "user-read-currently-playing";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -190,6 +192,8 @@ app.get("/login", (req, res) => {
     scope: SCOPE,
     redirect_uri: REDIRECT_URI,
   }).toString();
+
+  console.log(`Sending user to Spotify login page: https://accounts.spotify.com/authorize?${params}`);
 
   res.redirect("https://accounts.spotify.com/authorize?" + params);
 });
@@ -452,7 +456,7 @@ app.listen(port, async () => {
 
   if (!existsSync("tokens.json")) {
     console.log(
-      `${yellow}Please visit http://localhost:${port}/login to authenticate with Spotify`,
+      `${yellow}Please visit http://127.0.0.1:${port}/login to authenticate with Spotify`,
       reset
     );
   } else {

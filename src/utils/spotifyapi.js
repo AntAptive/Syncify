@@ -15,11 +15,13 @@ var verbosity;
 
 var noActiveDevicesWarning = false;
 
+var stopPolling = false;
+
 async function SetConfig(_port, _clientId, _clientSecret, _verbosity) {
   port = _port;
   CLIENT_ID = _clientId;
   CLIENT_SECRET = _clientSecret;
-  REDIRECT_URI = `http://localhost:${port}/callback`;
+  REDIRECT_URI = `http://127.0.0.1:${port}/callback`;
   verbosity = _verbosity;
   return true;
 }
@@ -71,6 +73,7 @@ async function GetTokens(code) {
 }
 
 async function RefreshAccessToken(refreshToken, tokensFilePath) {
+  if (stopPolling) return;
   try {
     const params = new URLSearchParams({
       grant_type: "refresh_token",
@@ -107,6 +110,41 @@ async function RefreshAccessToken(refreshToken, tokensFilePath) {
 
     if (verbosity >= 3) console.log(`${green}Token refreshed successfully`, reset);
   } catch (error) {
+    // Check if returned json error is "invalid_grant" (refresh token expired or revoked)
+    if (
+      error.response &&
+      error.response.data &&
+      error.response.data.error === "invalid_grant"
+    ) {
+      console.clear();
+      console.error(
+        `${red}
+ _              
+( \`.            
+ '. \\    .--.  
+   \\ \\  /    \\ 
+    \\ \\ \\    / 
+     ' . '--'  
+     | | .--.  
+     ' '/    \\ 
+    / / \\    / 
+   / /   '--'  
+ .' /           
+(_.'   
+\n----------------------------------------------\n
+/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\\n
+FATAL ERROR: Refresh token is invalid or expired.
+(Syncify can't talk with Spotify)
+Please delete tokens.json and re-open Syncify to
+re-authenticate with Spotify.\n
+/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\\n
+----------------------------------------------`,
+        reset,
+      );
+      stopPolling = true; // Stop polling for currently playing song since the refresh token is expired.
+      return;
+    }
+
     if (verbosity >= 1) console.error(`${red}Error refreshing token: `, error.response.data, reset);
   }
 }
@@ -121,6 +159,7 @@ async function EnsureValidToken(data, tokensFilePath) {
 }
 
 async function GetCurrentlyPlaying(tokensFilePath) {
+  if (stopPolling) return lastPolledSong ? lastPolledSong : nothingPlayingSong;
   try {
     const data = JSON.parse(readFileSync(tokensFilePath));
 
