@@ -145,7 +145,8 @@ re-authenticate with Spotify.\n
       return;
     }
 
-    if (verbosity >= 1) console.error(`${red}Error refreshing token: `, error.response.data, reset);
+    const errDetails = error.response?.data ?? error.message ?? "Unknown error";
+    if (verbosity >= 1) console.error(`${red}Error refreshing token: `, errDetails, reset);
   }
 }
 

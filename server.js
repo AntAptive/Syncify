@@ -115,8 +115,6 @@ var manualSong = false;
 // Var for if the play status has been set manually via the setplaystatus API endpoint
 var manualPlayStatus = false;
 
-var foo = "bar";
-
 // Var that houses the info for the currently playing song
 var currentSong = {
   playing: false,
@@ -161,7 +159,7 @@ async function StartInterval() {
             return;
           }
           currentSong = data;
-          if (currentSong.song != lastSong.song && currentSong.artists[0].name != lastSong.artists[0].name) { // If the current song does not match the last song...
+          if (currentSong.song != lastSong.song || currentSong.artists[0].name != lastSong.artists[0].name) { // If the current song does not match the last song...
             lastSong = currentSong;
             manualSong = false;
             manualPlayStatus = false;
@@ -224,8 +222,9 @@ app.get("/callback", async (req, res) => {
     if (verbosity >= 3) console.log(`${green}Successfully authenticated with Spotify!`, reset);
     res.send("Successfully authenticated! You can close this window.");
   } catch (error) {
+    const errDetails = error.response?.data ?? error.message ?? "Unknown error";
     if (verbosity >= 1)
-      console.error(`${red}Error getting access token:`, error.response.data, reset);
+      console.error(`${red}Error getting access token:`, errDetails, reset);
     res.send(
       "Error getting access token. Check Syncify console for more info."
     );
@@ -258,58 +257,31 @@ app.post('/api/setsong', (req, res) => {
     // Check if request is valid
     if (!data?.hasOwnProperty("playing")) {
       if (verbosity >= 3) console.log("Set song was denied: No playing status");
-      res.status(422).json({
-        message: "Syncify: Set song denied",
-        details: "No playing status",
-      });
-      return;
+      return res.status(422).json({ message: "Syncify: Set song denied", details: "No playing status" });
     } else if (!data?.hasOwnProperty("stopped")) {
       if (verbosity >= 3) console.log("Set song was denied: No stopped status");
-      res.status(422).json({
-        message: "Syncify: Set song denied",
-        details: "No stopped status",
-      });
-      return;
+      return res.status(422).json({ message: "Syncify: Set song denied", details: "No stopped status" });
     } else if (!data?.hasOwnProperty("song")) {
       if (verbosity >= 3) console.log("Set song was denied: No song title");
-      res.status(422).json({
-        message: "Syncify: Set song denied",
-        details: "No song title",
-      });
-      return;
+      return res.status(422).json({ message: "Syncify: Set song denied", details: "No song title" });
     } else if (!data?.hasOwnProperty("artists")) {
       if (verbosity >= 3) console.log("Set song was denied: No artists array");
-      res.status(422).json({
-        message: "Syncify: Set song denied",
-        details: "No artists array",
-      });
-      return;
+      return res.status(422).json({ message: "Syncify: Set song denied", details: "No artists array" });
     } else if (!data?.hasOwnProperty("firstArtist")) {
       if (verbosity >= 3) console.log("Set song was denied: No first artist");
-      res.status(422).json({
-        message: "Syncify: Set song denied",
-        details: "No first artist",
-      });
-      return;
+      return res.status(422).json({ message: "Syncify: Set song denied", details: "No first artist" });
     } else if (!data?.hasOwnProperty("coverArtUrl")) {
       if (verbosity >= 3) console.log("Set song was denied: No cover art URL");
-      res.status(422).json({
-        message: "Syncify: Set song denied",
-        details: "No cover art URL",
-      });
-      return;
+      return res.status(422).json({ message: "Syncify: Set song denied", details: "No cover art URL" });
     }
 
-    if (data?.hasOwnProperty("artists")) {
-      data.artists.forEach((artist) => {
-        if (!artist?.hasOwnProperty("name")) {
-          if (verbosity >= 3) console.log("Set song was denied: No artists name for one or more artists");
-          res.status(422).json({
-            message: "Syncify: Set song denied",
-            details: "No artist name for one or more artists",
-          });
-          return;
-        }
+    // Validate every artist has a name
+    const missingArtistName = data.artists.some((artist) => !artist?.hasOwnProperty("name"));
+    if (missingArtistName) {
+      if (verbosity >= 3) console.log("Set song was denied: No artist name for one or more artists");
+      return res.status(422).json({
+        message: "Syncify: Set song denied",
+        details: "No artist name for one or more artists",
       });
     }
 
