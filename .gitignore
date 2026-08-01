@@ -21,6 +21,11 @@ build/
 .vite/
 coverage/
 
+# CSharp Output
+*/dist/
+*/bin/
+*/obj/
+
 # Logs
 logs
 *.log

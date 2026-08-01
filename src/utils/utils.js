@@ -18,6 +18,8 @@ function EnsureConfigExists() {
   try {
     const defaultConfig = [
       "# Populate this file with your API credentials and preferences",
+      "# SOURCE can be spotify or smtc (Windows only).",
+      "SOURCE=spotify",
       "CLIENT_ID=your-client-id-here",
       "CLIENT_SECRET=your-client-secret-here",
       "PORT=8888",
@@ -69,27 +71,29 @@ function LoadAndValidateConfig(dotenv) {
 }
 
 function ValidateConfig(env) {
-  const { CLIENT_ID, CLIENT_SECRET, PORT, THEME, VERBOSITY } = env;
+  const { CLIENT_ID, CLIENT_SECRET, PORT, THEME, VERBOSITY, SOURCE } = env;
 
   let msg = "";
 
-  // Check CLIENT_ID
-  if (!CLIENT_ID || CLIENT_ID == "your-client-id-here") {
-    msg += "\nCLIENT_ID must be set.";
+  const source = (SOURCE || "spotify").toLowerCase();
+  if (source !== "spotify" && source !== "smtc") {
+    msg += "\nSOURCE must be either 'spotify' or 'smtc'.";
   }
 
-  // Check CLIENT_SECRET
-  if (!CLIENT_SECRET || CLIENT_SECRET == "your-client-secret-here") {
-    msg += "\nCLIENT_SECRET must be set.";
+  if (source === "spotify") {
+    if (!CLIENT_ID || CLIENT_ID == "your-client-id-here") {
+      msg += "\nCLIENT_ID must be set.";
+    }
+    if (!CLIENT_SECRET || CLIENT_SECRET == "your-client-secret-here") {
+      msg += "\nCLIENT_SECRET must be set.";
+    }
   }
 
-  // Check PORT
   const portNumber = Number(PORT);
   if (!PORT || isNaN(portNumber) || portNumber < 1024 || portNumber > 65535) {
     msg += "\nPORT must be a number between 1024 and 65535.";
   }
 
-  // Check THEME
   if (
     typeof THEME !== "string" || // Is not a string
     !THEME || // Doesn't exist

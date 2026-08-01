@@ -31,6 +31,7 @@ import { existsSync, writeFileSync, readFileSync } from "fs";
 import utils from "./src/utils/utils.js";
 import spotifyapi from "./src/utils/spotifyapi.js";
 import colors from "./src/utils/colors.js";
+import smtc from "./src/utils/smtc.js";
 import { URLSearchParams } from "url";
 
 utils.EnsureConfigExists();
@@ -42,6 +43,7 @@ const port = process.env.PORT || 8888;
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const verbosity = process.env.VERBOSITY;
+const SOURCE = (process.env.SOURCE || "spotify").toLowerCase();
 
 // Var for if polling has started for the currently playing song
 var intervalStarted = false;
@@ -79,12 +81,17 @@ const SCOPE = "user-read-currently-playing";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+async function PollNowPlaying() {
+  if (SOURCE === "smtc") {
+    return smtc.GetCurrentlyPlaying();
+  }
+  return spotifyapi.GetCurrentlyPlaying(path.resolve(__dirname, "./tokens.json"));
+}
+
 async function StartInterval() {
   if (!intervalStarted) {
     setInterval(() => {
-      spotifyapi
-        .GetCurrentlyPlaying(path.resolve(__dirname, "./tokens.json"))
-        .then((data) => {
+      PollNowPlaying().then((data) => {
           // If a manual song or manual play status is set and there is not a new Spotify song
           if ((manualSong == true || manualPlayStatus == true) && data.song == lastSong.song && data.artists[0].name == lastSong.artists[0].name) {
             // Set the playing status if it doesn't match the last song's playing status
@@ -147,21 +154,21 @@ app.get("/callback", async (req, res) => {
 
     writeFile("tokens.json", jsonString, (err) => {
       if (err) {
-        console.error(`${colors.red}Error writing tokens.json: `, err, reset);
+        console.error(`${colors.red}Error writing tokens.json: `, err, colors.reset);
       } else {
-        if (verbosity >= 3) console.log(`${colors.green}tokens.json successfully saved.`, reset);
+        if (verbosity >= 3) console.log(`${colors.green}tokens.json successfully saved.`, colors.reset);
       }
     });
 
     // Start polling for currently playing song
     StartInterval();
 
-    if (verbosity >= 3) console.log(`${colors.green}Successfully authenticated with Spotify!`, reset);
+    if (verbosity >= 3) console.log(`${colors.green}Successfully authenticated with Spotify!`, colors.reset);
     res.send("Successfully authenticated! You can close this window.");
   } catch (error) {
     const errDetails = error.response?.data ?? error.message ?? "Unknown error";
     if (verbosity >= 1)
-      console.error(`${colors.red}Error getting access token:`, errDetails, reset);
+      console.error(`${colors.red}Error getting access token:`, errDetails, colors.reset);
     res.send(
       "Error getting access token. Check Syncify console for more info."
     );
@@ -177,7 +184,7 @@ app.get("/api/getsong", (req, res) => {
   try {
     res.json(currentSong);
   } catch (error) {
-    console.error(`${colors.red}Server error:`, error, reset);
+    console.error(`${colors.red}Server error:`, error, colors.reset);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -316,7 +323,7 @@ async function LoadToken() {
     // Start polling for currently playing song
     StartInterval();
   } catch (err) {
-    if (verbosity >= 1) console.error(`${colors.red}Failed to read from tokens.json: `, err, reset);
+    if (verbosity >= 1) console.error(`${colors.red}Failed to read from tokens.json: `, err, colors.reset);
     process.exit();
   }
 }
@@ -324,15 +331,16 @@ async function LoadToken() {
 const server = app.listen(port, async () => {
   // Load environment variables for the Spotify API script
   await spotifyapi.SetConfig(port, CLIENT_ID, CLIENT_SECRET, verbosity);
+  smtc.SetConfig(__dirname, verbosity);
 
   try {
     const updates = utils.CheckGitRepoUpdates(__dirname);
     if (updates.hasUpdates && verbosity >= 2) {
-        console.log(`${colors.yellow}Syncify Update available! Your repository is ${updates.commitsBehinds} commit(s) behind.`, reset);
-        console.log('Latest change:', yellow, updates.latestCommitMessage, reset);
+        console.log(`${colors.yellow}Syncify Update available! Your repository is ${updates.commitsBehinds} commit(s) behind.`, colors.reset);
+        console.log('Latest change:', colors.yellow, updates.latestCommitMessage, colors.reset);
         console.log('Open update.bat or run "git pull" to update.');
     } else if (verbosity >= 2) {
-      console.log(`${colors.green}Syncify is up-to-date!`, reset);
+      console.log(`${colors.green}Syncify is up-to-date!`, colors.reset);
     }
   } catch (error) {
     if (verbosity >= 1)console.error('Failed to check for updates:', error.message);
@@ -354,10 +362,17 @@ const server = app.listen(port, async () => {
 
   if (verbosity >= 3) console.log(`Theme to serve is ${colors.yellow}${process.env.THEME}${colors.reset}. If another theme is being served, remember to open build.bat or run "npm run build" in the root folder.`);
 
-  if (!existsSync("tokens.json")) {
+  if (SOURCE === "smtc") {
+    if (verbosity >= 2)
+      console.log(
+        `${colors.green}Using local SMTC detection.`,
+        colors.reset,
+      );
+    StartInterval();
+  } else if (!existsSync("tokens.json")) {
     console.log(
       `${colors.yellow}Please visit http://127.0.0.1:${port}/login to authenticate with Spotify`,
-      colors.reset
+      colors.reset,
     );
   } else {
     LoadToken();
