@@ -232,18 +232,6 @@ app.get("/callback", async (req, res) => {
   }
 });
 
-// API endpoint to get configuration
-app.get("/api/config", (req, res) => {
-  const config = {
-    CLIENT_ID: process.env.CLIENT_ID,
-    CLIENT_SECRET: process.env.CLIENT_SECRET,
-    PORT: process.env.PORT || 8888,
-    THEME: process.env.THEME || "default",
-    VERBOSITY: process.env.VERBOSITY,
-  };
-  res.json(config);
-});
-
 // API endpoint to get the current playing song
 app.get("/api/getsong", (req, res) => {
   res.setHeader("Connection", "close");
