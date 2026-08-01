@@ -4,6 +4,10 @@ setlocal enabledelayedexpansion
 rem Enable Unicode support
 chcp 65001 >NUL
 
+rem Skip "press any key" prompt if called from Start.bat
+set CALLED_FROM_START=0
+if /i "%~1"=="auto" set CALLED_FROM_START=1
+
 echo Building...
 echo.
 
@@ -18,9 +22,12 @@ echo.
 if %BUILD_EXIT_CODE% neq 0 (
     echo Build script complete. See above for potential errors.
     echo Build log was saved to build.log
-    echo.
-    echo Press any key to close this window.
-    pause >NUL
+
+    if !CALLED_FROM_START!==0 (
+        echo.
+        echo Press any key to close this window.
+        pause >NUL
+    )
     exit /b %BUILD_EXIT_CODE%
 )
 
@@ -51,6 +58,11 @@ if /i "!SOURCE!"=="smtc" (
 
 echo Build script complete. See above for potential errors.
 echo Build log was saved to build.log
-echo.
-echo Press any key to close this window.
-pause >NUL
+
+if !CALLED_FROM_START!==0 (
+    echo.
+    echo Press any key to close this window.
+    pause >NUL
+)
+
+exit /b 0
