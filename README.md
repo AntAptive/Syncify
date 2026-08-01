@@ -1,10 +1,10 @@
 ![Syncify Banner](/readme/SyncifyBanner.png)
 # Syncify
-An open-source "Now Playing" widget that displays what you're currently playing on Spotify®
+An open-source "Now Playing" widget that displays what you're currently playing on Spotify®.
 
-Syncify can be used to display information from Spotify, or any platform using [Syncify's API](https://github.com/AntAptive/Syncify/wiki/API#apisetsong).
+Syncify can also display information from any platform using [Syncify's API](https://github.com/AntAptive/Syncify/wiki/API#apisetsong).
 
-**NOTE:** Syncify currently only works with songs and not podcasts or audiobooks. Since this is not Syncify's main purpose, the developer does not intend to add such functionality, but happily invites contributors to!
+**NOTE:** Syncify currently only works with songs, not podcasts or audiobooks. This isn't planned, but contributions are welcome!
 
 *This is an independent project that uses the Spotify API but is not affiliated with, sponsored, or endorsed by Spotify. Spotify is a registered trademark of Spotify AB.*
 
@@ -13,73 +13,82 @@ Syncify can be used to display information from Spotify, or any platform using [
 ### Consider supporting the creator!
 [Patreon](https://www.patreon.com/c/antaptive) | [Kofi](https://ko-fi.com/antaptive) | [Merch Store](http://shop.antaptive.com)
 
-
 ## Themes
-### Default<br>
-Shows cover art and scrolls if text is too long<br>
-![Default Theme](/readme/DefaultExample.png)<br>![Default Theme](/readme/DefaultExample2.png)<br>
+### Default
+Shows cover art and scrolls if text is too long.<br>
+![Default Theme](/readme/DefaultExample.png)![Default Theme](/readme/DefaultExample2.png)
 
-### Minimal<br>
-Scrolls if text is too long<br>
-![Minimal Theme](/readme/MinimalExample.png)<br>![Minimal Theme](/readme/MinimalExample2.png)<br>
+### Minimal
+Scrolls if text is too long.<br>
+![Minimal Theme](/readme/MinimalExample.png)![Minimal Theme](/readme/MinimalExample2.png)
 
-## Setup & Usage Guide
-**Syncify requires [Node.js](https://nodejs.org/en) to run and [Git](https://git-scm.com/downloads) to build. Please download both before continuing.**
+## Data Sources
+Syncify can get "now playing" info in two ways, set via `SOURCE` in `config.env`:
 
-**Syncify requires 75 MB of disk space**.
+| SOURCE | How it works | Requires |
+|---|---|---|
+| `spotify` *(default)* | Polls the Spotify Web API. Works across devices (phone, other computers, speakers). | A Spotify app + login |
+| `smtc` | Reads directly from Windows' local "Now Playing" system (the same info shown in your volume flyout). No login needed. | Windows 10/11 desktop only, [.NET SDK](https://dotnet.microsoft.com/en-us/download), [Build Tools for Visual Studio](https://aka.ms/vs/stable/vs_BuildTools.exe) |
 
-### Initial Setup
-**You will only have to do this once!**<br/>
-**Stuck? Need a video instead? [Click here](https://www.youtube.com/watch?v=1YG_Po0OduQ) for a full walkthrough.**
-1. Clone the repo and install all necessary packages: `git clone https://github.com/AntAptive/Syncify && cd syncify && npm install`
-2. Build the project: Open `build.bat` or run `npm run build`
-    * **NOTE:** You will need to do this every time you make changes to your config or Syncify's code.
-	* This will create your `config.env` file, which you can find in the root of the project directory.
-3. Go to your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and create a new app.
-	1. Click **Create App**.
-	2. Set **App name** & **App description** to whatever you want.
-	3. Add the **Redirect URI**: `http://127.0.0.1:PORT/callback`, **PORT** being the port which you want Syncify to use on your machine. (The default port is 8888. You can change it in your `config.env` file)
-	4. Agree to Spotify's Developer ToS and Design Guidelines.
-	5. Click **Save**, then **Settings** at the top-right.
-	6. Copy the **Client ID** and replace `your-client-id-here` in `config.env` with your client ID. Do the same with your client secret by clicking **View client secret**.
-4. Populate `config.env` with your credentials and preferences, then build the project again: Open `build.bat` or run `npm run build`
-    * The reason we're building again is to generate essential files for Syncify that rely on information in `config.env`.
-	* **NOTE:** Ensure your `config.env` is configured properly or you will encounter issues.
-5. Open `start.bat` to start Syncify.
-6. Syncify will now say `Please visit http://127.0.0.1:PORT/login to authenticate with Spotify`. Visit the supplied link in a web browser to complete authentication with Spotify.
-7. Visit `http://127.0.0.1:PORT` in a web browser or an OBS browser source to begin using Syncify.
+If you're not sure which to use: pick `spotify` if you want Syncify to reflect Spotify running on your phone or another device. Pick `smtc` if you only care about the Spotify desktop app on the same PC and want to skip the login/API setup entirely.
 
-Syncify can be closed by simply clicking the X button for its command prompt window.
+## Requirements
+- [Node.js](https://nodejs.org/en): required
+- [Git](https://git-scm.com/downloads): required to build
+- [.NET SDK](https://dotnet.microsoft.com/en-us/download): **only required if using `SOURCE=smtc`**
+- [Build Tools for Visual Studio](https://aka.ms/vs/stable/vs_BuildTools.exe): **only required if using `SOURCE=smtc`**. During install, check the **"Desktop development with C++"** workload.
+- ~75 MB of disk space
 
-### Using Syncify after setup
-It's as easy as opening `start.bat`!<br/>
-If your `tokens.json` file is corrupted or missing, you will have to re-authenticate with Spotify.<br/>
-Syncify can be closed by simply clicking the X button for its command prompt window.
+## Setup Guide
+**You'll only have to do this once. Need a video instead? [Click here](https://www.youtube.com/watch?v=1YG_Po0OduQ).**
 
-### Using Spotify in OBS Studio
-**NOTE:** Syncify will only display if the server is running. Open `start.bat` in Syncify's files to start the server.
-1. Create a new **Browser** source by clicking the Add (+) button at the bottom of your **Sources** dock. Call it whatever you want.
-2. Set the **URL** to `localhost:PORT`, **PORT** being the port which Syncify is using on your machine (The default port is 8888. You can change it in your `config.env` file)
+1. Clone the repo and install packages:
+   ```
+   git clone https://github.com/AntAptive/Syncify && cd syncify && npm install
+   ```
+2. Run `Build.bat` once. This creates your `config.env` file in the root folder.
+3. Open `config.env` and decide your `SOURCE`:
+   - **Using `spotify`** (default): follow the [Spotify setup steps](#spotify-setup) below, then fill in `CLIENT_ID` and `CLIENT_SECRET`.
+   - **Using `smtc`**: set `SOURCE=smtc`, make sure both the [.NET SDK](https://dotnet.microsoft.com/en-us/download) and [Build Tools for Visual Studio](https://aka.ms/vs/stable/vs_BuildTools.exe) (with the "Desktop development with C++" workload checked) are installed.
+4. Set your `PORT` and `THEME` preferences in `config.env` (see [Configuration](#configuration)).
+5. Run `Build.bat` again to apply your config.
+   - `Start.bat` will also auto-build for you if it detects the project hasn't been built yet, so this step is optional if you're about to open `Start.bat` next anyway.
+6. Open `Start.bat` to launch Syncify.
+   - If using `SOURCE=spotify`, visit `http://127.0.0.1:PORT/login` when prompted to authenticate.
+7. Visit `http://127.0.0.1:PORT` in a browser or OBS browser source to see it running.
+
+Close Syncify anytime by clicking the X on its command prompt window.
+
+### Spotify Setup
+Only needed if `SOURCE=spotify`.
+1. Go to your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and click **Create App**.
+2. Set any **App name** and **App description**.
+3. Add the **Redirect URI**: `http://127.0.0.1:PORT/callback` (replace `PORT` with the port you plan to use - default is `8888`).
+4. Agree to Spotify's Developer ToS and Design Guidelines, then click **Save**.
+5. Open **Settings**, copy your **Client ID** and **Client Secret** into `config.env`.
+
+## Using Syncify after setup
+Just open `Start.bat`. If `tokens.json` is missing or corrupted (Spotify mode only), you'll need to re-authenticate.
+
+## Using Syncify in OBS Studio
+Syncify only displays while `Start.bat` is running.
+1. Add a new **Browser** source in OBS.
+2. Set the **URL** to `localhost:PORT` (default port is `8888`).
 3. Click **OK**.
 
-## Troubleshooting
-If you're encountering issues, ensure your `config.env` file is configured properly and run `npm run build`.<br/>
-For other issues, see our [wiki](https://github.com/AntAptive/Syncify/wiki/Troubleshooting) for troubleshooting steps.<br/>
-If issues are persistent and you're unsure how to resolve them, contact me on Discord (**AntAptive**) or [open an issue](https://github.com/AntAptive/Syncify/issues/new).
-
 ## Configuration
-All of Syncify's config is in `config.env`, which is generated after running `npm run build` for the first time.
-* **CLIENT_ID** & **CLIENT_SECRET**: Your Spotify API credentials. See above in Setup & Usage Guide for how to create a Spotify app and figure out what to put here.
-* **PORT**: The port on your machine that Syncify will run on. Must be a number between 1024 and 65535.
-* **THEME**: What theme file (in [src/themes](/src/themes)) Syncify will serve.
-    * **TIP:** While Syncify should handle case-insensitivity, ensure **THEME** matches the filename’s exact case to avoid IDE errors.
-* **VERBOSITY**: The level of messages sent to the console. 
-	* **0**: Critical messages only
-    * **1**: Errors
-	* **2** *(Default)*: Important info
-	* **3**: Debug | **NOTE:** A verbosity level of 3 or higher may output sensitive information to the console and is intended for developers and advanced users only. **DO NOT** use level 3 if you are a streamer.
+All config lives in `config.env`, generated the first time you run `Build.bat`.
+
+| Key | Description |
+|---|---|
+| `SOURCE` | `spotify` or `smtc`. See [Data Sources](#data-sources). |
+| `CLIENT_ID` / `CLIENT_SECRET` | Your Spotify API credentials. Only needed if `SOURCE=spotify`. |
+| `PORT` | The port Syncify runs on. Must be a number between 1024–65535. |
+| `THEME` | Which theme file (from [src/themes](/src/themes)) to serve. Must match the filename exactly (case-sensitive), without the extension. |
+| `VERBOSITY` | Console log detail level: `0` critical only, `1` errors, `2` important info *(default)*, `3` debug. **Streamers: keep this below 3** - level 3+ can print sensitive info to the console. |
+
+## Troubleshooting
+Make sure `config.env` is configured correctly, then run `Build.bat` again. For further help, see the [wiki](https://github.com/AntAptive/Syncify/wiki/Troubleshooting), contact **AntAptive** on Discord, or [open an issue](https://github.com/AntAptive/Syncify/issues/new).
 
 ## Using Syncify with other platforms
-Syncify primarily uses the Spotify API to get its information. However, Syncify can be used with other platforms by utilizing the [setsong API endpoint](https://github.com/AntAptive/Syncify/wiki/API#apisetsong).
-
-This method is for advanced users. Please feel free to [open an issue](https://github.com/AntAptive/Syncify/issues/new) to request native support for a platform.
+Syncify can display data from platforms other than Spotify via the [setsong API endpoint](https://github.com/AntAptive/Syncify/wiki/API#apisetsong). This is intended for advanced users - feel free to [open an issue](https://github.com/AntAptive/Syncify/issues/new) to request native support for a specific platform.
