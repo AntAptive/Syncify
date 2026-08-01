@@ -27,77 +27,14 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-import { existsSync, writeFileSync, readFileSync, writeFile, unlink } from "fs";
+import { existsSync, writeFileSync, readFileSync } from "fs";
 import utils from "./src/utils/utils.js";
 import spotifyapi from "./src/utils/spotifyapi.js";
+import colors from "./src/utils/colors.js";
 import { URLSearchParams } from "url";
 
-const red = "\x1b[31m";
-const green = "\x1b[32m";
-const yellow = "\x1b[33m";
-const reset = "\x1b[0m";
-
-// Load config
-if (!existsSync("./config.env")) {
-  unlink("tokens.json", (err) => {
-    // Delete tokens.json as they're likely not usable anymore.
-    if (err) {
-      console.error(`${red}Failed to delete tokens.json: `, err, reset);
-      return;
-    }
-  });
-  try {
-    const defaultConfig = [
-      "# Populate this file with your API credentials and preferences",
-      "CLIENT_ID=your-client-id-here",
-      "CLIENT_SECRET=your-client-secret-here",
-      "PORT=8888",
-      "THEME=Default",
-      "VERBOSITY=2",
-    ].join("\n");
-
-    // Create a config file if one does not exist
-    writeFileSync("./config.env", defaultConfig, { encoding: "utf8" });
-
-    console.warn(
-      `${yellow}Config.env was not found, and one has been created. Please populate the file with your configuration, then restart Syncify.`,
-      reset
-    );
-  } catch (err) {
-    console.error(
-      `${red}Config.env was not found, and one could not be created.\n`,
-      err,
-      `\n${yellow}Tip:${reset} Please ensure Syncify is in a location with write permissions.`
-    );
-  }
-  process.exit(1);
-} else {
-  try {
-    // Load environment variables from config.env
-    dotenv.config({ path: "./config.env" });
-
-    // Validate to ensure config.env has a proper config
-    const validConf = utils.ValidateConfig(process.env);
-    if (validConf != "") {
-      console.error(
-        `${red}Error starting Syncify: Config.env could not be validated. `,
-        validConf,
-        reset
-      );
-      process.exit(1);
-    }
-  } catch (ex) {
-    console.error(
-      `${red}Error starting Syncify: Config.env could not be loaded. The file may be corrupted.`,
-      "\nIn case you'd like to attempt to repair your config file, Syncify has left the file untouched.",
-      "\nIf you cannot repair the file, please delete it and reobtain your API credentials at https://developer.spotify.com/dashboard.",
-      "\n----\nTechnical mumbo jumbo:\n",
-      ex.message,
-      reset
-    );
-    process.exit(1);
-  }
-}
+utils.EnsureConfigExists();
+utils.LoadAndValidateConfig(dotenv);
 
 const app = express();
 
@@ -127,8 +64,8 @@ var currentSong = {
 
 if (!existsSync("./dist")) {
   console.error(
-    `${red}Failed to start Syncify. The build files have not been created. Please open Build.bat or run "npm run build" before starting Syncify.`,
-    reset
+    `${colors.red}Failed to start Syncify. The build files have not been created. Please open Build.bat or run "npm run build" before starting Syncify.`,
+    colors.reset
   );
   process.exit(1);
 }
@@ -165,7 +102,7 @@ async function StartInterval() {
             manualPlayStatus = false;
             if (!currentSong.stopped && verbosity >= 3) {
               console.log(
-                `${green}New song:${reset} ${currentSong.artists[0].name} - ${currentSong.song}`
+                `${colors.green}New song:${colors.reset} ${currentSong.artists[0].name} - ${currentSong.song}`
               );
             }
           // If the song wasn't changed, but the last song doesn't match the playing status of the current
@@ -210,21 +147,21 @@ app.get("/callback", async (req, res) => {
 
     writeFile("tokens.json", jsonString, (err) => {
       if (err) {
-        console.error(`${red}Error writing tokens.json: `, err, reset);
+        console.error(`${colors.red}Error writing tokens.json: `, err, reset);
       } else {
-        if (verbosity >= 3) console.log(`${green}tokens.json successfully saved.`, reset);
+        if (verbosity >= 3) console.log(`${colors.green}tokens.json successfully saved.`, reset);
       }
     });
 
     // Start polling for currently playing song
     StartInterval();
 
-    if (verbosity >= 3) console.log(`${green}Successfully authenticated with Spotify!`, reset);
+    if (verbosity >= 3) console.log(`${colors.green}Successfully authenticated with Spotify!`, reset);
     res.send("Successfully authenticated! You can close this window.");
   } catch (error) {
     const errDetails = error.response?.data ?? error.message ?? "Unknown error";
     if (verbosity >= 1)
-      console.error(`${red}Error getting access token:`, errDetails, reset);
+      console.error(`${colors.red}Error getting access token:`, errDetails, reset);
     res.send(
       "Error getting access token. Check Syncify console for more info."
     );
@@ -240,7 +177,7 @@ app.get("/api/getsong", (req, res) => {
   try {
     res.json(currentSong);
   } catch (error) {
-    console.error(`${red}Server error:`, error, reset);
+    console.error(`${colors.red}Server error:`, error, reset);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -290,7 +227,7 @@ app.post('/api/setsong', (req, res) => {
 
     if (verbosity >= 3) {
       console.log(
-        `${green}New song (manual):${reset} ${currentSong.artists[0].name} - ${currentSong.song} ${data.stopped ? "(stopped)" : data.playing ? "" : "(paused)"}`
+        `${colors.green}New song (manual):${colors.reset} ${currentSong.artists[0].name} - ${currentSong.song} ${data.stopped ? "(stopped)" : data.playing ? "" : "(paused)"}`
       );
     }
 
@@ -299,7 +236,7 @@ app.post('/api/setsong', (req, res) => {
       receivedData: data
     });
   } catch (error) {
-    if (verbosity >= 1) console.log(`${red}ERROR:${reset} Syncify received a set song command but failed to handle it.`);
+    if (verbosity >= 1) console.log(`${colors.red}ERROR:${colors.reset} Syncify received a set song command but failed to handle it.`);
     if (verbosity >= 3) console.log(error.message);
 
     res.status(400).json({
@@ -339,7 +276,7 @@ app.post("/api/setplaystatus", (req, res) => {
 
     if (verbosity >= 3) {
       console.log(
-        `${green}New manual play status:  Playing: ${data.playing}  Stopped: ${data.stopped}`
+        `${colors.green}New manual play status:  Playing: ${data.playing}  Stopped: ${data.stopped}`
       );
     }
 
@@ -350,7 +287,7 @@ app.post("/api/setplaystatus", (req, res) => {
   } catch (error) {
     if (verbosity >= 1)
       console.log(
-        `${red}ERROR:${reset} Syncify received a set play status command but failed to handle it.`
+        `${colors.red}ERROR:${colors.reset} Syncify received a set play status command but failed to handle it.`
       );
     if (verbosity >= 3) console.log(error.message);
 
@@ -379,50 +316,68 @@ async function LoadToken() {
     // Start polling for currently playing song
     StartInterval();
   } catch (err) {
-    if (verbosity >= 1) console.error(`${red}Failed to read from tokens.json: `, err, reset);
+    if (verbosity >= 1) console.error(`${colors.red}Failed to read from tokens.json: `, err, reset);
     process.exit();
   }
 }
 
-app.listen(port, async () => {
+const server = app.listen(port, async () => {
   // Load environment variables for the Spotify API script
   await spotifyapi.SetConfig(port, CLIENT_ID, CLIENT_SECRET, verbosity);
 
   try {
     const updates = utils.CheckGitRepoUpdates(__dirname);
     if (updates.hasUpdates && verbosity >= 2) {
-        console.log(`${yellow}Syncify Update available! Your repository is ${updates.commitsBehinds} commit(s) behind.`, reset);
+        console.log(`${colors.yellow}Syncify Update available! Your repository is ${updates.commitsBehinds} commit(s) behind.`, reset);
         console.log('Latest change:', yellow, updates.latestCommitMessage, reset);
         console.log('Open update.bat or run "git pull" to update.');
     } else if (verbosity >= 2) {
-      console.log(`${green}Syncify is up-to-date!`, reset);
+      console.log(`${colors.green}Syncify is up-to-date!`, reset);
     }
   } catch (error) {
     if (verbosity >= 1)console.error('Failed to check for updates:', error.message);
   }
 
   if (verbosity >= 3) console.log(
-    `\n----------\n${yellow}WARN:${reset} You are currently running Syncify with a verbosity level of ${verbosity}.\n` +
+    `\n----------\n${colors.yellow}WARN:${colors.reset} You are currently running Syncify with a verbosity level of ${verbosity}.\n` +
       "For content creators, it is recommended to keep your verbosity level (set in config.env) lower than 3, as levels of 3 or higher may output sensitive information to the console.\n" +
       "This functionality is intentional for debugging purposes.\n" +
-      `${yellow}If you are streaming, ${red}PLEASE SET YOUR VERBOSITY TO LESS THAN 3!` +
-      reset +
+      `${colors.yellow}If you are streaming, ${colors.red}PLEASE SET YOUR VERBOSITY TO LESS THAN 3!` +
+      colors.reset +
       "\n----------\n"
   );
 
-  if (verbosity >= 1) console.log(`${green}Server running at http://localhost:${port}`, reset);
+  if (verbosity >= 1) console.log(`${colors.green}Server running at http://localhost:${port}`, colors.reset);
 
   // Simple message for those with a verbosity level of 0.
-  if (verbosity == 0) console.log(`${green}Syncify is running.`, reset);
+  if (verbosity == 0) console.log(`${colors.green}Syncify is running.`, colors.reset);
 
-  if (verbosity >= 3) console.log(`Theme to serve is ${yellow}${process.env.THEME}${reset}. If another theme is being served, remember to open build.bat or run "npm run build" in the root folder.`);
+  if (verbosity >= 3) console.log(`Theme to serve is ${colors.yellow}${process.env.THEME}${colors.reset}. If another theme is being served, remember to open build.bat or run "npm run build" in the root folder.`);
 
   if (!existsSync("tokens.json")) {
     console.log(
-      `${yellow}Please visit http://127.0.0.1:${port}/login to authenticate with Spotify`,
-      reset
+      `${colors.yellow}Please visit http://127.0.0.1:${port}/login to authenticate with Spotify`,
+      colors.reset
     );
   } else {
     LoadToken();
   }
+});
+
+server.on("error", (err) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(
+      `${colors.red}Failed to start Syncify: Port ${port} is already in use.`,
+      `\nAnother program (or another instance of Syncify) is using this port.`,
+      `\nEither close that program, or change PORT in config.env to a different value.`,
+      colors.reset,
+    );
+  } else {
+    console.error(
+      `${colors.red}Failed to start Syncify:`,
+      err.message,
+      colors.reset,
+    );
+  }
+  process.exit(1);
 });

@@ -1,11 +1,7 @@
 import axios from "axios";
 import { readFileSync, writeFile } from "fs";
 import { URLSearchParams } from "url";
-
-const red = "\x1b[31m";
-const green = "\x1b[32m";
-const yellow = "\x1b[33m";
-const reset = "\x1b[0m";
+import colors from "./colors.js";
 
 var port;
 var CLIENT_ID;
@@ -102,13 +98,13 @@ async function RefreshAccessToken(refreshToken, tokensFilePath) {
 
     writeFile(tokensFilePath, jsonString, (err) => {
       if (err) {
-        if (verbosity >= 1) console.error(`${red}Error writing tokens.json: `, err, reset);
+        if (verbosity >= 1) console.error(`${colors.red}Error writing tokens.json: `, err, colors.reset);
       } else {
-        if (verbosity >= 3) console.log(`${green}tokens.json successfully saved.`, reset);
+        if (verbosity >= 3) console.log(`${colors.green}tokens.json successfully saved.`, colors.reset);
       }
     });
 
-    if (verbosity >= 3) console.log(`${green}Token refreshed successfully`, reset);
+    if (verbosity >= 3) console.log(`${colors.green}Token refreshed successfully`, colors.reset);
   } catch (error) {
     // Check if returned json error is "invalid_grant" (refresh token expired or revoked)
     if (
@@ -118,7 +114,7 @@ async function RefreshAccessToken(refreshToken, tokensFilePath) {
     ) {
       console.clear();
       console.error(
-        `${red}
+        `${colors.red}
  _              
 ( \`.            
  '. \\    .--.  
@@ -139,14 +135,14 @@ Please delete tokens.json and re-open Syncify to
 re-authenticate with Spotify.\n
 /!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\/!\\\n
 ----------------------------------------------`,
-        reset,
+        colors.reset,
       );
       stopPolling = true; // Stop polling for currently playing song since the refresh token is expired.
       return;
     }
 
     const errDetails = error.response?.data ?? error.message ?? "Unknown error";
-    if (verbosity >= 1) console.error(`${red}Error refreshing token: `, errDetails, reset);
+    if (verbosity >= 1) console.error(`${colors.red}Error refreshing token: `, errDetails, colors.reset);
   }
 }
 
@@ -193,8 +189,8 @@ async function GetCurrentlyPlaying(tokensFilePath) {
         noActiveDevicesWarning = true;
         if (verbosity >= 2)
           console.warn(
-            `${yellow}No track is currently playing. No active devices were found.`,
-            reset
+            `${colors.yellow}No track is currently playing. No active devices were found.`,
+            colors.reset,
           );
       }
       return nothingPlayingSong;
@@ -203,15 +199,15 @@ async function GetCurrentlyPlaying(tokensFilePath) {
 
       if (verbosity >= 1)
         console.error(
-          `${red}Failed to get currently playing song. Status code was`,
+          `${colors.red}Failed to get currently playing song. Status code was`,
           response.status,
-          reset
+          colors.reset,
         );
       return lastPolledSong ? lastPolledSong : nothingPlayingSong;
     }
   } catch (ex) {
     if (verbosity >= 1)
-      console.error(`${red}Error getting currently playing song:`, ex.message, reset);
+      console.error(`${colors.red}Error getting currently playing song:`, ex.message, reset);
     return lastPolledSong ? lastPolledSong : nothingPlayingSong;
   }
 }

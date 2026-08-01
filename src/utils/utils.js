@@ -1,5 +1,72 @@
 import { execSync } from "child_process";
 import path from "path";
+import { existsSync, writeFileSync, unlink } from "fs";
+import colors from "./colors.js";
+
+// Ensures config.env exists. If it doesn't, creates a default one,
+// clears out stale tokens, and exits the process.
+function EnsureConfigExists() {
+  if (existsSync("./config.env")) return;
+
+  unlink("tokens.json", (err) => {
+    // Delete tokens.json as they're likely not usable anymore.
+    if (err) {
+      console.error(`${colors.red}Failed to delete tokens.json: `, err, reset);
+    }
+  });
+
+  try {
+    const defaultConfig = [
+      "# Populate this file with your API credentials and preferences",
+      "CLIENT_ID=your-client-id-here",
+      "CLIENT_SECRET=your-client-secret-here",
+      "PORT=8888",
+      "THEME=Default",
+      "VERBOSITY=2",
+    ].join("\n");
+
+    writeFileSync("./config.env", defaultConfig, { encoding: "utf8" });
+
+    console.warn(
+      `${colors.yellow}Config.env was not found, and one has been created. Please populate the file with your configuration, then restart Syncify.`,
+      colors.reset,
+    );
+  } catch (err) {
+    console.error(
+      `${colors.red}Config.env was not found, and one could not be created.\n`,
+      err,
+      `\n${colors.yellow}Tip:${colors.reset} Please ensure Syncify is in a location with write permissions.`,
+    );
+  }
+  process.exit(1);
+}
+
+// Loads config.env via dotenv and validates it. Exits the process on failure.
+function LoadAndValidateConfig(dotenv) {
+  try {
+    dotenv.config({ path: "./config.env" });
+
+    const validConf = ValidateConfig(process.env);
+    if (validConf != "") {
+      console.error(
+        `${colors.red}Error starting Syncify: Config.env could not be validated. `,
+        validConf,
+        colors.reset,
+      );
+      process.exit(1);
+    }
+  } catch (ex) {
+    console.error(
+      `${colors.red}Error starting Syncify: Config.env could not be loaded. The file may be corrupted.`,
+      "\nIn case you'd like to attempt to repair your config file, Syncify has left the file untouched.",
+      "\nIf you cannot repair the file, please delete it and reobtain your API credentials at https://developer.spotify.com/dashboard.",
+      "\n----\nTechnical mumbo jumbo:\n",
+      ex.message,
+      colors.reset,
+    );
+    process.exit(1);
+  }
+}
 
 function ValidateConfig(env) {
   const { CLIENT_ID, CLIENT_SECRET, PORT, THEME, VERBOSITY } = env;
@@ -84,7 +151,9 @@ function CheckGitRepoUpdates(repoPath) {
 
 const utils = {
   ValidateConfig,
-  CheckGitRepoUpdates
+  CheckGitRepoUpdates,
+  EnsureConfigExists,
+  LoadAndValidateConfig,
 };
 
 export default utils;
