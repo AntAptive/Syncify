@@ -2,7 +2,7 @@
 # Syncify
 An open-source "Now Playing" widget that displays what you're currently playing on Spotify®.
 
-Syncify can also display information from any platform using [Syncify's API](https://github.com/AntAptive/Syncify/wiki/API#apisetsong).
+Syncify can also display information from any virtually media player via SMTC (see [Data Sources](#data-sources)) or manually by using [Syncify's API](https://github.com/AntAptive/Syncify/wiki/API#apisetsong).
 
 **NOTE:** Syncify currently only works with songs, not podcasts or audiobooks. This isn't planned, but contributions are welcome!
 
