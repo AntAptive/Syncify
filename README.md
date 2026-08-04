@@ -14,21 +14,23 @@ Syncify can also display information from any platform using [Syncify's API](htt
 [Patreon](https://www.patreon.com/c/antaptive) | [Kofi](https://ko-fi.com/antaptive) | [Merch Store](http://shop.antaptive.com)
 
 ## Themes
-### Default
-Shows cover art and scrolls if text is too long.<br>
-![Default Theme](/readme/DefaultExample.png)![Default Theme](/readme/DefaultExample2.png)
-
-### Minimal
-Scrolls if text is too long.<br>
-![Minimal Theme](/readme/MinimalExample.png)![Minimal Theme](/readme/MinimalExample2.png)
+| Name | Preview |
+| ---- | ------- |
+| Default | ![Default Theme](/readme/default.png) |
+| Minimal | ![Minimal Theme](/readme/minimal.png) |
+| Aurora | ![Aurora Theme](/readme/aurora.png) |
+| Marquee | ![Marquee Theme](/readme/marquee.png) |
+| Vinyl | ![Vinyl Theme](/readme/vinyl.png) |
+| Luna XP | ![Luna XP Theme](/readme/lunaxp.png) |
+| Winamp | ![Winamp Theme](/readme/winamp.png) |
 
 ## Data Sources
 Syncify can get "now playing" info in two ways, set via `SOURCE` in `config.env`:
 
 | SOURCE | How it works | Requires |
 |---|---|---|
-| `spotify` *(default)* | Polls the Spotify Web API. Works across devices (phone, other computers, speakers). | A Spotify app + login |
-| `smtc` | Reads directly from Windows' local "Now Playing" system (the same info shown in your volume flyout). No login needed. | Windows 10/11 desktop only, [.NET SDK](https://dotnet.microsoft.com/en-us/download), [Build Tools for Visual Studio](https://aka.ms/vs/stable/vs_BuildTools.exe) |
+| `spotify` *(default)* | Polls the Spotify Web API. Works across devices (phone, other computers, speakers). Recommended for **accuracy**. | A Spotify app + login |
+| `smtc` | Reads directly from Windows' local "Now Playing" system (the same info shown in your volume flyout). No login needed. Recommended for **ease-of-use**. | Windows 10/11 desktop only, [.NET SDK](https://dotnet.microsoft.com/en-us/download), [Build Tools for Visual Studio](https://aka.ms/vs/stable/vs_BuildTools.exe) |
 
 If you're not sure which to use: pick `spotify` if you want Syncify to reflect Spotify running on your phone or another device. Pick `smtc` if you only care about the Spotify desktop app on the same PC and want to skip the login/API setup entirely.
 
