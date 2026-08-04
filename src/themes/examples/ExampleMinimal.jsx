@@ -2,42 +2,22 @@ import React, { useRef, useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
 
+const FADE_WIDTH = 30;
+
+const getFadeMask = ({ $showLeftGradient, $showRightGradient }) => {
+  const left = $showLeftGradient ? `transparent 0, black ${FADE_WIDTH}px` : "black 0";
+  const right = $showRightGradient
+    ? `black calc(100% - ${FADE_WIDTH}px), transparent 100%`
+    : "black 100%";
+  return `linear-gradient(to right, ${left}, ${right})`;
+};
+
 const ScrollingContainer = styled.div`
   width: 100%;
   overflow: hidden;
   position: relative;
-
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 30px;
-    pointer-events: none;
-    z-index: 1;
-    transition: opacity 0.3s ease;
-  }
-
-  &::before {
-    left: 0;
-    background: linear-gradient(
-      to right,
-      ${({ theme }) => theme?.background || "#282828"} 0%,
-      transparent 100%
-    );
-    opacity: ${(props) => (props.$showLeftGradient ? 1 : 0)};
-  }
-
-  &::after {
-    right: 0;
-    background: linear-gradient(
-      to left,
-      ${({ theme }) => theme?.background || "#282828"} 0%,
-      transparent 100%
-    );
-    opacity: ${(props) => (props.$showRightGradient ? 1 : 0)};
-  }
+  -webkit-mask-image: ${getFadeMask};
+  mask-image: ${getFadeMask};
 `;
 
 const ScrollingText = styled.div`

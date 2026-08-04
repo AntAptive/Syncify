@@ -23,61 +23,36 @@ const ScrollingContainer = styled.div`
 const ScrollingText = styled.div`
   white-space: nowrap;
   display: inline-block;
-  font-size: ${({ isSong }) => (isSong ? "1.9rem" : "1.7rem")};
-  font-weight: ${({ isSong }) => (isSong ? "600" : "400")};
-  opacity: ${({ isSong }) => (isSong ? "1" : "0.8")};
+  font-family: "Oswald", "Arial Narrow", sans-serif;
+  text-transform: uppercase;
+  font-size: ${({ isSong }) => (isSong ? "2.15rem" : "1.4rem")};
+  font-weight: ${({ isSong }) => (isSong ? "600" : "500")};
+  letter-spacing: ${({ isSong }) => (isSong ? "0.01em" : "0.1em")};
+  color: ${({ isSong }) => (isSong ? "#ffffff" : "#1ed760")};
   transition: opacity 0.3s ease;
 `;
 
 const WidgetContainer = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 0.75rem 1.1rem;
-  background: linear-gradient(160deg, #262626 0%, #1c1c1c 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(29, 215, 96, 0.45);
-  box-shadow:
-    0 10px 26px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  width: 500px;
-  gap: 0.9rem;
-  color: white;
-  font-family: "Montserrat", "Inter", sans-serif;
+  padding: 1rem 1.3rem;
+  background: #0a0a0a;
+  border-radius: 6px;
+  border: 3px solid #ffffff;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+  width: 560px;
+  gap: 1.2rem;
+  font-family: "Oswald", "Arial Narrow", sans-serif;
 `;
 
-const LogoWrap = styled.div`
-  position: relative;
-  flex-shrink: 0;
-  display: flex;
-`;
-
-const SpotifyLogo = styled.img`
-  width: 45px;
-  height: 45px;
-  border-radius: 4px;
+const CoverArt = styled.img`
+  width: 96px;
+  height: 96px;
   object-fit: cover;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
-`;
-
-const LiveDot = styled.span`
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  border: 2px solid #1c1c1c;
-  background: ${({ $active }) => ($active ? "#1ed760" : "rgba(255, 255, 255, 0.3)")};
-  box-shadow: ${({ $active }) =>
-    $active ? "0 0 8px rgba(30, 215, 96, 0.85)" : "none"};
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-`;
-
-const Divider = styled.div`
-  flex-shrink: 0;
-  width: 1px;
-  align-self: stretch;
-  background: rgba(255, 255, 255, 0.1);
+  border: 3px solid #ffffff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.3s ease;
 `;
 
 const SongInfo = styled.div`
@@ -89,10 +64,45 @@ const SongInfo = styled.div`
   flex: 1;
 `;
 
+const Kicker = styled.div`
+  font-family: "Oswald", "Arial Narrow", sans-serif;
+  text-transform: uppercase;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 2px;
+`;
+
+const Rule = styled.div`
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #1ed760, rgba(255, 255, 255, 0.08));
+  margin: 5px 0;
+`;
+
+const LogoBadge = styled.div`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+`;
+
+const LogoImg = styled.img`
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+`;
+
 const PIXELS_PER_SECOND = 100;
 const PAUSE_DURATION = 1000;
 
-const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
+const ScrollingTitle = ({ text, isSong = false, isChanging, songData }) => {
   const containerRef = useRef(null);
   const textRef = useRef(null);
   const intervalRef = useRef(null);
@@ -270,7 +280,8 @@ const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
     <ScrollingContainer
       ref={containerRef}
       $showLeftGradient={showLeftGradient}
-      $showRightGradient={showRightGradient}>
+      $showRightGradient={showRightGradient}
+      >
       <ScrollingText
         ref={textRef}
         isSong={isSong}
@@ -281,6 +292,7 @@ const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
           opacity: isChanging ? 0 : textOpacity,
           transition: getTransitionStyle(),
           animationFillMode: "forwards",
+          display: songData?.song || isSong ? "inline-block" : "none"
         }}>
         {text}
       </ScrollingText>
@@ -290,7 +302,7 @@ const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
 
 const Theme = () => {
   const [songData, setSongData] = useState();
-  const [songDisplay, setSongDisplay] = useState();
+  const [allArtists, setAllArtists] = useState();
   const [isChanging, setIsChanging] = useState(true); // Start true to let the data load
   const [pendingData, setPendingData] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -319,7 +331,7 @@ const Theme = () => {
         response.data &&
         JSON.stringify(response.data) !== JSON.stringify(songData)
       ) {
-        if (songData !== undefined)
+        if (songData !== undefined) {
           if (
             response.data.playing != songData.playing &&
             response.data.song == songData.song
@@ -329,6 +341,7 @@ const Theme = () => {
             setSongData(response.data);
             return;
           }
+        }
 
         setIsPlaying(response.data.playing);
         setIsChanging(true);
@@ -344,7 +357,7 @@ const Theme = () => {
               artists += `${artist.name}, `;
             });
             artists = artists.slice(0, -2); // Remove the last comma and space
-            setSongDisplay(response.data.song ? `${artists} - ${response.data.song}` : "");
+            setAllArtists(artists);
 
             // Wait for new content to render, then fade in
             setTimeout(() => {
@@ -361,26 +374,37 @@ const Theme = () => {
 
   return (
     <WidgetContainer>
-      <LogoWrap>
-        <SpotifyLogo
-          src={
-            `http://localhost:${window.location.port}/SpotifyWhite.svg`
-          }
-          alt="Spotify"
-          style={{
-            opacity: 1
-          }}
-        />
-        <LiveDot $active={isPlaying && !isChanging} />
-      </LogoWrap>
-      <Divider />
+      <CoverArt
+        src={
+          songData?.coverArtUrl ||
+          `http://localhost:${window.location.port}/nothingplaying.png`
+        }
+        alt="Album Cover"
+        style={{
+          opacity: isChanging ? 0 : 1,
+        }}
+      />
       <SongInfo>
+        <Kicker>{isPlaying ? "Now Playing" : "Up Next"}</Kicker>
         <ScrollingTitle
-          text={`${songDisplay}` || "Nothing playing!"}
+          text={songData?.song || "Nothing playing!"}
           isSong={true}
           isChanging={isChanging}
+          songData={songData}
+        />
+        <Rule />
+        <ScrollingTitle
+          text={allArtists || ""}
+          isChanging={isChanging}
+          songData={songData}
         />
       </SongInfo>
+      <LogoBadge>
+        <LogoImg
+          src={`http://localhost:${window.location.port}/SpotifyWhite.svg`}
+          alt="Spotify"
+        />
+      </LogoBadge>
     </WidgetContainer>
   );
 };

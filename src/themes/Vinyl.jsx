@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import axios from "axios";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 const FADE_WIDTH = 30;
 
@@ -23,76 +23,110 @@ const ScrollingContainer = styled.div`
 const ScrollingText = styled.div`
   white-space: nowrap;
   display: inline-block;
-  font-size: ${({ isSong }) => (isSong ? "1.9rem" : "1.7rem")};
-  font-weight: ${({ isSong }) => (isSong ? "600" : "400")};
-  opacity: ${({ isSong }) => (isSong ? "1" : "0.8")};
+  font-family: "Fraunces", "Georgia", serif;
+  font-size: ${({ isSong }) => (isSong ? "2rem" : "1.35rem")};
+  font-style: ${({ isSong }) => (isSong ? "italic" : "normal")};
+  font-weight: ${({ isSong }) => (isSong ? "600" : "500")};
+  letter-spacing: ${({ isSong }) => (isSong ? "0" : "0.12em")};
+  text-transform: ${({ isSong }) => (isSong ? "none" : "uppercase")};
+  color: ${({ isSong }) => (isSong ? "#2b2118" : "#6b5a45")};
   transition: opacity 0.3s ease;
 `;
 
 const WidgetContainer = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 0.75rem 1.1rem;
-  background: linear-gradient(160deg, #262626 0%, #1c1c1c 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(29, 215, 96, 0.45);
+  padding: 1.1rem 1.5rem 1.1rem 2.6rem;
+  background: linear-gradient(155deg, #faf6ee 0%, #f3ecdd 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(43, 33, 24, 0.1);
   box-shadow:
-    0 10px 26px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  width: 500px;
-  gap: 0.9rem;
-  color: white;
-  font-family: "Montserrat", "Inter", sans-serif;
+    0 16px 36px rgba(43, 33, 24, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  width: 560px;
+  gap: 1.4rem;
+  font-family: "Fraunces", "Georgia", serif;
 `;
 
-const LogoWrap = styled.div`
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const RecordWrap = styled.div`
   position: relative;
+  width: 110px;
+  height: 110px;
   flex-shrink: 0;
-  display: flex;
 `;
 
-const SpotifyLogo = styled.img`
-  width: 45px;
-  height: 45px;
-  border-radius: 4px;
-  object-fit: cover;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
-`;
-
-const LiveDot = styled.span`
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 11px;
-  height: 11px;
+const Record = styled.div`
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
-  border: 2px solid #1c1c1c;
-  background: ${({ $active }) => ($active ? "#1ed760" : "rgba(255, 255, 255, 0.3)")};
-  box-shadow: ${({ $active }) =>
-    $active ? "0 0 8px rgba(30, 215, 96, 0.85)" : "none"};
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 2px #2b2118,
+    0 0 0 5px #faf6ee,
+    0 0 0 6px rgba(43, 33, 24, 0.35),
+    0 6px 16px rgba(43, 33, 24, 0.35);
+  animation: ${spin} 6s linear infinite;
+  animation-play-state: ${({ $spinning }) => ($spinning ? "running" : "paused")};
 `;
 
-const Divider = styled.div`
-  flex-shrink: 0;
-  width: 1px;
-  align-self: stretch;
-  background: rgba(255, 255, 255, 0.1);
+const CoverArt = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+`;
+
+const Spindle = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #faf6ee;
+  border: 2px solid #2b2118;
+  transform: translate(-50%, -50%);
+  z-index: 2;
 `;
 
 const SongInfo = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 8px;
   overflow: hidden;
   flex: 1;
+`;
+
+const AccentRule = styled.div`
+  width: 34px;
+  height: 3px;
+  background: #1db954;
+  border-radius: 2px;
+  margin: 2px 0 4px;
+`;
+
+const LogoBadge = styled.img`
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  opacity: 0.85;
 `;
 
 const PIXELS_PER_SECOND = 100;
 const PAUSE_DURATION = 1000;
 
-const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
+const ScrollingTitle = ({ text, isSong = false, isChanging, songData }) => {
   const containerRef = useRef(null);
   const textRef = useRef(null);
   const intervalRef = useRef(null);
@@ -270,7 +304,8 @@ const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
     <ScrollingContainer
       ref={containerRef}
       $showLeftGradient={showLeftGradient}
-      $showRightGradient={showRightGradient}>
+      $showRightGradient={showRightGradient}
+      >
       <ScrollingText
         ref={textRef}
         isSong={isSong}
@@ -281,6 +316,7 @@ const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
           opacity: isChanging ? 0 : textOpacity,
           transition: getTransitionStyle(),
           animationFillMode: "forwards",
+          display: songData?.song || isSong ? "inline-block" : "none"
         }}>
         {text}
       </ScrollingText>
@@ -290,7 +326,7 @@ const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
 
 const Theme = () => {
   const [songData, setSongData] = useState();
-  const [songDisplay, setSongDisplay] = useState();
+  const [allArtists, setAllArtists] = useState();
   const [isChanging, setIsChanging] = useState(true); // Start true to let the data load
   const [pendingData, setPendingData] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -319,7 +355,7 @@ const Theme = () => {
         response.data &&
         JSON.stringify(response.data) !== JSON.stringify(songData)
       ) {
-        if (songData !== undefined)
+        if (songData !== undefined) {
           if (
             response.data.playing != songData.playing &&
             response.data.song == songData.song
@@ -329,6 +365,7 @@ const Theme = () => {
             setSongData(response.data);
             return;
           }
+        }
 
         setIsPlaying(response.data.playing);
         setIsChanging(true);
@@ -344,7 +381,7 @@ const Theme = () => {
               artists += `${artist.name}, `;
             });
             artists = artists.slice(0, -2); // Remove the last comma and space
-            setSongDisplay(response.data.song ? `${artists} - ${response.data.song}` : "");
+            setAllArtists(artists);
 
             // Wait for new content to render, then fade in
             setTimeout(() => {
@@ -361,24 +398,37 @@ const Theme = () => {
 
   return (
     <WidgetContainer>
-      <LogoWrap>
-        <SpotifyLogo
-          src={
-            `http://localhost:${window.location.port}/SpotifyWhite.svg`
-          }
-          alt="Spotify"
-          style={{
-            opacity: 1
-          }}
-        />
-        <LiveDot $active={isPlaying && !isChanging} />
-      </LogoWrap>
-      <Divider />
+      <LogoBadge
+        src={`http://localhost:${window.location.port}/SpotifyBlack.svg`}
+        alt="Spotify"
+      />
+      <RecordWrap>
+        <Record $spinning={isPlaying && !isChanging}>
+          <CoverArt
+            src={
+              songData?.coverArtUrl ||
+              `http://localhost:${window.location.port}/nothingplaying.png`
+            }
+            alt="Album Cover"
+            style={{
+              opacity: isChanging ? 0 : 1,
+            }}
+          />
+        </Record>
+        <Spindle />
+      </RecordWrap>
       <SongInfo>
         <ScrollingTitle
-          text={`${songDisplay}` || "Nothing playing!"}
+          text={songData?.song || "Nothing playing!"}
           isSong={true}
           isChanging={isChanging}
+          songData={songData}
+        />
+        <AccentRule />
+        <ScrollingTitle
+          text={allArtists || ""}
+          isChanging={isChanging}
+          songData={songData}
         />
       </SongInfo>
     </WidgetContainer>

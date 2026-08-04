@@ -2,42 +2,22 @@ import React, { useRef, useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
 
+const FADE_WIDTH = 30;
+
+const getFadeMask = ({ $showLeftGradient, $showRightGradient }) => {
+  const left = $showLeftGradient ? `transparent 0, black ${FADE_WIDTH}px` : "black 0";
+  const right = $showRightGradient
+    ? `black calc(100% - ${FADE_WIDTH}px), transparent 100%`
+    : "black 100%";
+  return `linear-gradient(to right, ${left}, ${right})`;
+};
+
 const ScrollingContainer = styled.div`
   width: 100%;
   overflow: hidden;
   position: relative;
-
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 30px;
-    pointer-events: none;
-    z-index: 1;
-    transition: opacity 0.3s ease;
-  }
-
-  &::before {
-    left: 0;
-    background: linear-gradient(
-      to right,
-      ${({ theme }) => theme?.background || "#282828"} 0%,
-      transparent 100%
-    );
-    opacity: ${(props) => (props.$showLeftGradient ? 1 : 0)};
-  }
-
-  &::after {
-    right: 0;
-    background: linear-gradient(
-      to left,
-      ${({ theme }) => theme?.background || "#282828"} 0%,
-      transparent 100%
-    );
-    opacity: ${(props) => (props.$showRightGradient ? 1 : 0)};
-  }
+  -webkit-mask-image: ${getFadeMask};
+  mask-image: ${getFadeMask};
 `;
 
 const ScrollingText = styled.div`
@@ -51,14 +31,16 @@ const ScrollingText = styled.div`
 
 const WidgetContainer = styled.div`
   display: flex;
-  padding: 0.5rem 1rem;
-  background: #282828;
-  border-radius: 8px;
-  border-color: #1576ed;
-  border-width: 3px;
-  border-style: solid;
+  align-items: center;
+  padding: 0.85rem 1.4rem;
+  background: linear-gradient(160deg, #262626 0%, #1c1c1c 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(29, 215, 96, 0.45);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   width: 550px;
-  gap: 1rem;
+  gap: 1.15rem;
   color: white;
   font-family: "Montserrat", "Inter", sans-serif;
 `;
@@ -66,8 +48,10 @@ const WidgetContainer = styled.div`
 const CoverArt = styled.img`
   width: 100px;
   height: 100px;
-  border-radius: 4px;
+  border-radius: 8px;
   object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
   transition: opacity 0.3s ease;
 `;
 
@@ -76,15 +60,39 @@ const SpotifyLogo = styled.img`
   height: 100px;
   border-radius: 4px;
   object-fit: cover;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 `;
 
 const SongInfo = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   overflow: hidden;
   flex: 1;
+`;
+
+const ArtistRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+`;
+
+const ArtistTextWrap = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const LiveDot = styled.span`
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: ${({ $active }) => ($active ? "#1ed760" : "rgba(255, 255, 255, 0.25)")};
+  box-shadow: ${({ $active }) =>
+    $active ? "0 0 8px rgba(30, 215, 96, 0.85)" : "none"};
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 `;
 
 const PIXELS_PER_SECOND = 100;
@@ -391,11 +399,16 @@ const Theme = () => {
           isChanging={isChanging}
           songData={songData}
         />
-        <ScrollingTitle
-          text={allArtists || ""}
-          isChanging={isChanging}
-          songData={songData}
-        />
+        <ArtistRow>
+          <LiveDot $active={isPlaying && !isChanging} />
+          <ArtistTextWrap>
+            <ScrollingTitle
+              text={allArtists || ""}
+              isChanging={isChanging}
+              songData={songData}
+            />
+          </ArtistTextWrap>
+        </ArtistRow>
       </SongInfo>
     </WidgetContainer>
   );

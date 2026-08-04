@@ -1,98 +1,171 @@
 import React, { useRef, useState, useEffect } from "react";
 import axios from "axios";
-import styled from "styled-components";
-
-const FADE_WIDTH = 30;
-
-const getFadeMask = ({ $showLeftGradient, $showRightGradient }) => {
-  const left = $showLeftGradient ? `transparent 0, black ${FADE_WIDTH}px` : "black 0";
-  const right = $showRightGradient
-    ? `black calc(100% - ${FADE_WIDTH}px), transparent 100%`
-    : "black 100%";
-  return `linear-gradient(to right, ${left}, ${right})`;
-};
+import styled, { keyframes } from "styled-components";
 
 const ScrollingContainer = styled.div`
   width: 100%;
   overflow: hidden;
   position: relative;
-  -webkit-mask-image: ${getFadeMask};
-  mask-image: ${getFadeMask};
 `;
 
 const ScrollingText = styled.div`
   white-space: nowrap;
   display: inline-block;
-  font-size: ${({ isSong }) => (isSong ? "1.9rem" : "1.7rem")};
-  font-weight: ${({ isSong }) => (isSong ? "600" : "400")};
-  opacity: ${({ isSong }) => (isSong ? "1" : "0.8")};
+  font-family: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
+  letter-spacing: 0.04em;
+  font-size: ${({ isSong }) => (isSong ? "1.7rem" : "1.25rem")};
+  font-weight: ${({ isSong }) => (isSong ? "700" : "500")};
+  color: ${({ isSong }) => (isSong ? "#4dff7c" : "#2fcf5f")};
+  text-shadow: ${({ isSong }) =>
+    isSong
+      ? "0 0 8px rgba(77, 255, 124, 0.65)"
+      : "0 0 5px rgba(47, 207, 95, 0.5)"};
   transition: opacity 0.3s ease;
 `;
 
-const WidgetContainer = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1.1rem;
-  background: linear-gradient(160deg, #262626 0%, #1c1c1c 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(29, 215, 96, 0.45);
-  box-shadow:
-    0 10px 26px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  width: 500px;
-  gap: 0.9rem;
-  color: white;
-  font-family: "Montserrat", "Inter", sans-serif;
-`;
-
-const LogoWrap = styled.div`
-  position: relative;
-  flex-shrink: 0;
-  display: flex;
-`;
-
-const SpotifyLogo = styled.img`
-  width: 45px;
-  height: 45px;
-  border-radius: 4px;
-  object-fit: cover;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
-`;
-
-const LiveDot = styled.span`
+const screw = (pos) => `
   position: absolute;
-  bottom: -2px;
-  right: -2px;
+  ${pos}
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  border: 2px solid #1c1c1c;
-  background: ${({ $active }) => ($active ? "#1ed760" : "rgba(255, 255, 255, 0.3)")};
-  box-shadow: ${({ $active }) =>
-    $active ? "0 0 8px rgba(30, 215, 96, 0.85)" : "none"};
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  background: radial-gradient(circle at 35% 30%, #e6e6e6, #8a8a8a 55%, #333 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 15%;
+    right: 15%;
+    height: 1.5px;
+    background: rgba(0, 0, 0, 0.55);
+    transform: translateY(-50%) rotate(35deg);
+  }
 `;
 
-const Divider = styled.div`
+const Chassis = styled.div`
+  position: relative;
+  width: 560px;
+  padding: 1.1rem 1.2rem;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.025) 0px,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    linear-gradient(180deg, #5a5a5a 0%, #3c3c3c 45%, #262626 100%);
+  border-radius: 8px;
+  border: 1px solid #1a1a1a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6),
+    0 16px 34px rgba(0, 0, 0, 0.55);
+  font-family: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
+`;
+
+const ScrewTL = styled.div`${screw("top: 8px; left: 8px;")}`;
+const ScrewTR = styled.div`${screw("top: 8px; right: 8px;")}`;
+const ScrewBL = styled.div`${screw("bottom: 8px; left: 8px;")}`;
+const ScrewBR = styled.div`${screw("bottom: 8px; right: 8px;")}`;
+
+const Row = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const BezelFrame = styled.div`
   flex-shrink: 0;
-  width: 1px;
-  align-self: stretch;
-  background: rgba(255, 255, 255, 0.1);
+  width: 92px;
+  height: 92px;
+  padding: 3px;
+  background: linear-gradient(180deg, #6e6e6e 0%, #2b2b2b 100%);
+  border-radius: 5px;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.6);
 `;
 
-const SongInfo = styled.div`
+const CoverArt = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1px solid #111;
+  transition: opacity 0.3s ease;
+`;
+
+const glow = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+`;
+
+const PowerLed = styled.span`
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: ${({ $active }) => ($active ? "#4dff7c" : "#2a3a2a")};
+  box-shadow: ${({ $active }) =>
+    $active ? "0 0 7px rgba(77, 255, 124, 0.9)" : "none"};
+  animation: ${({ $active }) => ($active ? glow : "none")} 1.6s ease-in-out infinite;
+`;
+
+const Screen = styled.div`
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  padding: 0.7rem 0.9rem;
+  background: linear-gradient(180deg, #001f00 0%, #000d00 100%);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px #000;
+`;
+
+const ScreenHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #2fcf5f;
+  opacity: 0.85;
+`;
+
+const LogoBadge = styled.div`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 4px;
-  overflow: hidden;
-  flex: 1;
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #6e6e6e 0%, #2b2b2b 100%);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.6);
+`;
+
+const LogoImg = styled.img`
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
 `;
 
 const PIXELS_PER_SECOND = 100;
 const PAUSE_DURATION = 1000;
 
-const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
+const ScrollingTitle = ({ text, isSong = false, isChanging, songData }) => {
   const containerRef = useRef(null);
   const textRef = useRef(null);
   const intervalRef = useRef(null);
@@ -270,7 +343,8 @@ const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
     <ScrollingContainer
       ref={containerRef}
       $showLeftGradient={showLeftGradient}
-      $showRightGradient={showRightGradient}>
+      $showRightGradient={showRightGradient}
+      >
       <ScrollingText
         ref={textRef}
         isSong={isSong}
@@ -281,6 +355,7 @@ const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
           opacity: isChanging ? 0 : textOpacity,
           transition: getTransitionStyle(),
           animationFillMode: "forwards",
+          display: songData?.song || isSong ? "inline-block" : "none"
         }}>
         {text}
       </ScrollingText>
@@ -290,7 +365,7 @@ const ScrollingTitle = ({ text, isSong = false, isChanging }) => {
 
 const Theme = () => {
   const [songData, setSongData] = useState();
-  const [songDisplay, setSongDisplay] = useState();
+  const [allArtists, setAllArtists] = useState();
   const [isChanging, setIsChanging] = useState(true); // Start true to let the data load
   const [pendingData, setPendingData] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -319,7 +394,7 @@ const Theme = () => {
         response.data &&
         JSON.stringify(response.data) !== JSON.stringify(songData)
       ) {
-        if (songData !== undefined)
+        if (songData !== undefined) {
           if (
             response.data.playing != songData.playing &&
             response.data.song == songData.song
@@ -329,6 +404,7 @@ const Theme = () => {
             setSongData(response.data);
             return;
           }
+        }
 
         setIsPlaying(response.data.playing);
         setIsChanging(true);
@@ -344,7 +420,7 @@ const Theme = () => {
               artists += `${artist.name}, `;
             });
             artists = artists.slice(0, -2); // Remove the last comma and space
-            setSongDisplay(response.data.song ? `${artists} - ${response.data.song}` : "");
+            setAllArtists(artists);
 
             // Wait for new content to render, then fade in
             setTimeout(() => {
@@ -360,28 +436,49 @@ const Theme = () => {
   }, [songData, isChanging, pendingData]);
 
   return (
-    <WidgetContainer>
-      <LogoWrap>
-        <SpotifyLogo
-          src={
-            `http://localhost:${window.location.port}/SpotifyWhite.svg`
-          }
-          alt="Spotify"
-          style={{
-            opacity: 1
-          }}
-        />
-        <LiveDot $active={isPlaying && !isChanging} />
-      </LogoWrap>
-      <Divider />
-      <SongInfo>
-        <ScrollingTitle
-          text={`${songDisplay}` || "Nothing playing!"}
-          isSong={true}
-          isChanging={isChanging}
-        />
-      </SongInfo>
-    </WidgetContainer>
+    <Chassis>
+      <ScrewTL />
+      <ScrewTR />
+      <ScrewBL />
+      <ScrewBR />
+      <Row>
+        <BezelFrame>
+          <CoverArt
+            src={
+              songData?.coverArtUrl ||
+              `http://localhost:${window.location.port}/nothingplaying.png`
+            }
+            alt="Album Cover"
+            style={{
+              opacity: isChanging ? 0 : 1,
+            }}
+          />
+        </BezelFrame>
+        <Screen>
+          <ScreenHeader>
+            <PowerLed $active={isPlaying && !isChanging} />
+            {isPlaying ? "Playing" : "Standby"}
+          </ScreenHeader>
+          <ScrollingTitle
+            text={songData?.song || "Nothing playing!"}
+            isSong={true}
+            isChanging={isChanging}
+            songData={songData}
+          />
+          <ScrollingTitle
+            text={allArtists || ""}
+            isChanging={isChanging}
+            songData={songData}
+          />
+        </Screen>
+        <LogoBadge>
+          <LogoImg
+            src={`http://localhost:${window.location.port}/SpotifyWhite.svg`}
+            alt="Spotify"
+          />
+        </LogoBadge>
+      </Row>
+    </Chassis>
   );
 };
 
