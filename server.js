@@ -27,7 +27,7 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-import { existsSync, writeFileSync, readFileSync } from "fs";
+import { existsSync, writeFile, readFileSync } from "fs";
 import utils from "./src/utils/utils.js";
 import spotifyapi from "./src/utils/spotifyapi.js";
 import colors from "./src/utils/colors.js";
