@@ -207,7 +207,7 @@ async function GetCurrentlyPlaying(tokensFilePath) {
     }
   } catch (ex) {
     if (verbosity >= 1)
-      console.error(`${colors.red}Error getting currently playing song:`, ex.message, reset);
+      console.error(`${colors.red}Error getting currently playing song:`, ex.message, colors.reset);
     return lastPolledSong ? lastPolledSong : nothingPlayingSong;
   }
 }
