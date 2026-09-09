@@ -22,6 +22,7 @@ Syncify can also display information from any virtually media player via SMTC (s
 | Aurora | ![Aurora Theme](/readme/aurora.png) |
 | Marquee | ![Marquee Theme](/readme/marquee.png) |
 | Vinyl | ![Vinyl Theme](/readme/vinyl.png) |
+| Monstercat | ![Winamp Theme](/readme/monstercat.png) |
 | Luna XP | ![Luna XP Theme](/readme/lunaxp.png) |
 | Winamp | ![Winamp Theme](/readme/winamp.png) |
 
