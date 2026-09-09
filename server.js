@@ -82,6 +82,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function PollNowPlaying() {
+  if (SOURCE === "api") {
+    return; // Return nothing since the API already has the current song set manually
+  }
   if (SOURCE === "smtc") {
     return smtc.GetCurrentlyPlaying();
   }
@@ -92,6 +95,10 @@ async function StartInterval() {
   if (!intervalStarted) {
     setInterval(() => {
       PollNowPlaying().then((data) => {
+          if (data == null) {
+            return;
+          }
+
           // If a manual song or manual play status is set and there is not a new Spotify song
           if ((manualSong == true || manualPlayStatus == true) && data.song == lastSong.song && data.artists[0].name == lastSong.artists[0].name) {
             // Set the playing status if it doesn't match the last song's playing status
@@ -103,6 +110,7 @@ async function StartInterval() {
             return;
           }
           currentSong = data;
+
           if (currentSong.song != lastSong.song || currentSong.artists[0].name != lastSong.artists[0].name) { // If the current song does not match the last song...
             lastSong = currentSong;
             manualSong = false;

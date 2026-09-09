@@ -76,8 +76,8 @@ function ValidateConfig(env) {
   let msg = "";
 
   const source = (SOURCE || "spotify").toLowerCase();
-  if (source !== "spotify" && source !== "smtc") {
-    msg += "\nSOURCE must be either 'spotify' or 'smtc'.";
+  if (source !== "spotify" && source !== "smtc" && source !== "api") {
+    msg += "\nSOURCE must be either 'spotify', 'smtc', or 'api'.";
   }
 
   if (source === "spotify") {

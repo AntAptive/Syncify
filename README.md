@@ -1,6 +1,7 @@
 ![Syncify Banner](/readme/SyncifyBanner.png)
 # Syncify
-An open-source "Now Playing" widget that displays what you're currently playing on Spotify®.
+A "Now Playing" widget that displays what you're currently playing on Spotify®
+### **⚠️ Requires Spotify Premium.** [Learn More](https://developer.spotify.com/blog/2026-02-06-update-on-developer-access-and-platform-security)
 
 Syncify can also display information from any virtually media player via SMTC (see [Data Sources](#data-sources)) or manually by using [Syncify's API](https://github.com/AntAptive/Syncify/wiki/API#apisetsong).
 
@@ -29,10 +30,11 @@ Syncify can get "now playing" info in two ways, set via `SOURCE` in `config.env`
 
 | SOURCE | How it works | Requires |
 |---|---|---|
-| `spotify` *(default)* | Polls the Spotify Web API. Works across devices (phone, other computers, speakers). Recommended for **accuracy**. | A Spotify app + login |
+| `spotify` *(default)* | Polls the Spotify Web API. Works across devices (phone, other computers, speakers). Recommended for **accuracy**. | [Spotify app + login](#spotify-setup) |
 | `smtc` | Reads directly from Windows' local "Now Playing" system (the same info shown in your volume flyout). No login needed. Recommended for **ease-of-use**. | Windows 10/11 desktop only, [.NET SDK](https://dotnet.microsoft.com/en-us/download), [Build Tools for Visual Studio](https://aka.ms/vs/stable/vs_BuildTools.exe) |
+| `api` | Does not poll from anywhere, relying solely on API calls via the [/api/setsong](https://github.com/AntAptive/Syncify/wiki/API#apisetsong) endpoint. **This is the equivalence of disabling automatic polling.** | Custom service to call [/api/setsong](https://github.com/AntAptive/Syncify/wiki/API#apisetsong) |
 
-If you're not sure which to use: pick `spotify` if you want Syncify to reflect Spotify running on your phone or another device. Pick `smtc` if you only care about the Spotify desktop app on the same PC and want to skip the login/API setup entirely.
+If you're not sure which to use: Pick `spotify` if you want Syncify to reflect Spotify running, whether it be on your computer or another device. Pick `smtc` if you only care about the Spotify desktop app on the same PC and want to skip the login/API setup entirely, or you're not using Spotify. Pick `api` if you want full control over Syncify.
 
 ## Requirements
 - [Node.js](https://nodejs.org/en): required
@@ -62,7 +64,7 @@ If you're not sure which to use: pick `spotify` if you want Syncify to reflect S
 Close Syncify anytime by clicking the X on its command prompt window.
 
 ### Spotify Setup
-Only needed if `SOURCE=spotify`.
+**Only needed if `SOURCE=spotify`.**
 1. Go to your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and click **Create App**.
 2. Set any **App name** and **App description**.
 3. Add the **Redirect URI**: `http://127.0.0.1:PORT/callback` (replace `PORT` with the port you plan to use - default is `8888`).
@@ -70,7 +72,7 @@ Only needed if `SOURCE=spotify`.
 5. Open **Settings**, copy your **Client ID** and **Client Secret** into `config.env`.
 
 ## Using Syncify after setup
-Just open `Start.bat`. If `tokens.json` is missing or corrupted (Spotify mode only), you'll need to re-authenticate.
+Just open `Start.bat`. If `tokens.json` is missing or corrupted, you'll need to re-authenticate. *(Spotify mode only)*
 
 ## Using Syncify in OBS Studio
 Syncify only displays while `Start.bat` is running.
@@ -83,7 +85,7 @@ All config lives in `config.env`, generated the first time you run `Build.bat`.
 
 | Key | Description |
 |---|---|
-| `SOURCE` | `spotify` or `smtc`. See [Data Sources](#data-sources). |
+| `SOURCE` | `spotify`, `smtc` or `api`. See [Data Sources](#data-sources). |
 | `CLIENT_ID` / `CLIENT_SECRET` | Your Spotify API credentials. Only needed if `SOURCE=spotify`. |
 | `PORT` | The port Syncify runs on. Must be a number between 1024–65535. |
 | `THEME` | Which theme file (from [src/themes](/src/themes)) to serve. Must match the filename exactly (case-sensitive), without the extension. |
