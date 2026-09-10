@@ -198,7 +198,7 @@ app.get("/api/getsong", (req, res) => {
 });
 
 // For POST requests
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
 // API endpoint to set the currently playing song
 app.post('/api/setsong', (req, res) => {
