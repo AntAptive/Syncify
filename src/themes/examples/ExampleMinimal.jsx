@@ -284,7 +284,7 @@ const Theme = () => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await axios.get(
-        `http://localhost:${window.location.port}/api/getsong`
+        "/api/getsong"
       );
       if (
         response.data &&
@@ -333,7 +333,7 @@ const Theme = () => {
   return (
     <WidgetContainer>
       <CoverArt
-        src={`http://localhost:${window.location.port}/paused.png`}
+        src={"/paused.png"}
         alt="Pause Icon"
         style={{
           opacity: isChanging ? 0 : isPlaying ? 0 : 1,
@@ -343,7 +343,7 @@ const Theme = () => {
       <CoverArt
         src={
           songData?.coverArtUrl ||
-          `http://localhost:${window.location.port}/nothingplaying.png`
+          "/nothingplaying.png"
         }
         alt="Album Cover"
         style={{

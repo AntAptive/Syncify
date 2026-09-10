@@ -171,7 +171,7 @@ const Theme = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:${window.location.port}/api/getsong`
+          "/api/getsong"
         );
 
         if (
@@ -219,7 +219,7 @@ const Theme = () => {
         <CoverArt
           src={
             songData?.coverArtUrl ||
-            `http://localhost:${window.location.port}/nothingplaying.png`
+            "/nothingplaying.png"
           }
           alt="Album Cover"
           style={{ opacity: coverOpacity }}

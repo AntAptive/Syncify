@@ -344,9 +344,7 @@ const Theme = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await axios.get(
-        `http://localhost:${window.location.port}/api/getsong`
-      );
+      const response = await axios.get("/api/getsong");
       if (
         response.data &&
         JSON.stringify(response.data) !== JSON.stringify(songData)
@@ -397,7 +395,7 @@ const Theme = () => {
       <CoverArt
         src={
           songData?.coverArtUrl ||
-          `http://localhost:${window.location.port}/nothingplaying.png`
+          "/nothingplaying.png"
         }
         alt="Album Cover"
         style={{
@@ -427,7 +425,7 @@ const Theme = () => {
         </ArtistRow>
       </SongInfo>
       <LogoBadge
-        src={`http://localhost:${window.location.port}/SpotifyWhite.svg`}
+        src={"/SpotifyWhite.svg"}
         alt="Spotify"
       />
     </WidgetContainer>

@@ -313,7 +313,7 @@ const Theme = () => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await axios.get(
-        `http://localhost:${window.location.port}/api/getsong`
+        "/api/getsong"
       );
       if (
         response.data &&
@@ -364,7 +364,7 @@ const Theme = () => {
       <LogoWrap>
         <SpotifyLogo
           src={
-            `http://localhost:${window.location.port}/SpotifyWhite.svg`
+            "/SpotifyWhite.svg"
           }
           alt="Spotify"
           style={{
