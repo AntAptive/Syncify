@@ -115,7 +115,7 @@ async function StartInterval() {
             lastSong = currentSong;
             manualSong = false;
             manualPlayStatus = false;
-            if (!currentSong.stopped && verbosity >= 3) {
+            if (!currentSong.stopped && verbosity >= 2) {
               console.log(
                 `${colors.green}New song:${colors.reset} ${currentSong.artists[0].name} - ${currentSong.song}`
               );
@@ -240,7 +240,7 @@ app.post('/api/setsong', (req, res) => {
     manualSong = true;
     currentSong = data;
 
-    if (verbosity >= 3) {
+    if (verbosity >= 2) {
       console.log(
         `${colors.green}New song (manual):${colors.reset} ${currentSong.artists[0].name} - ${currentSong.song} ${data.stopped ? "(stopped)" : data.playing ? "" : "(paused)"}`
       );
