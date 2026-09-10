@@ -370,20 +370,34 @@ const server = app.listen(port, async () => {
 
   if (verbosity >= 3) console.log(`Theme to serve is ${colors.yellow}${process.env.THEME}${colors.reset}. If another theme is being served, remember to open build.bat or run "npm run build" in the root folder.`);
 
-  if (SOURCE === "smtc") {
-    if (verbosity >= 2)
+  switch (SOURCE) {
+    case "smtc":
+      if (verbosity >= 2) {
+        console.log(
+          `${colors.green}Using local SMTC detection.${colors.reset}`,
+        );
+      }
+      StartInterval();
+      break;
+
+    case "spotify":
+      if (!existsSync("tokens.json")) {
+        console.log(
+          `${colors.yellow}Please visit http://127.0.0.1:${port}/login to authenticate with Spotify${colors.reset}`,
+        );
+      } else {
+        LoadToken();
+      }
+      break;
+
+    case "api":
       console.log(
-        `${colors.green}Using local SMTC detection.`,
-        colors.reset,
+        `${colors.green}Using API mode, automatic polling disabled.${colors.reset}`,
       );
-    StartInterval();
-  } else if (!existsSync("tokens.json")) {
-    console.log(
-      `${colors.yellow}Please visit http://127.0.0.1:${port}/login to authenticate with Spotify`,
-      colors.reset,
-    );
-  } else {
-    LoadToken();
+      break;
+
+    default:
+      console.warn(`${colors.yellow}Unknown SOURCE: ${SOURCE}${colors.reset}`);
   }
 });
 
