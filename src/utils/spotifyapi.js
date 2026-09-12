@@ -10,8 +10,10 @@ var REDIRECT_URI;
 var verbosity;
 
 var noActiveDevicesWarning = false;
+var rateLimitWarned = false;
 
 var stopPolling = false;
+var pauseUntil = 0;
 
 async function SetConfig(_port, _clientId, _clientSecret, _verbosity) {
   port = _port;
@@ -156,7 +158,10 @@ async function EnsureValidToken(data, tokensFilePath) {
 }
 
 async function GetCurrentlyPlaying(tokensFilePath) {
-  if (stopPolling) return lastPolledSong ? lastPolledSong : nothingPlayingSong;
+  // If stopPolling is true, or if the pauseUntil time has not yet passed, return the last polled song or nothingPlayingSong
+  if (stopPolling
+    || Date.now() < pauseUntil)
+    return lastPolledSong ? lastPolledSong : nothingPlayingSong;
   try {
     const data = JSON.parse(readFileSync(tokensFilePath));
 
@@ -168,11 +173,12 @@ async function GetCurrentlyPlaying(tokensFilePath) {
         headers: {
           Authorization: `Bearer ${data.accessToken}`,
         },
-      }
+      },
     );
 
     if (response.status === 200 && response.data.item) {
       noActiveDevicesWarning = false; // Set this to false so the "No active devices" warning can print again
+      rateLimitWarned = false; // Set this to false so the "Rate limited" warning can print again
 
       const jsonData = {
         playing: response.data.is_playing,
@@ -187,6 +193,7 @@ async function GetCurrentlyPlaying(tokensFilePath) {
     } else if (response.status === 204) {
       if (noActiveDevicesWarning == false) {
         noActiveDevicesWarning = true;
+        rateLimitWarned = false;
         if (verbosity >= 2)
           console.warn(
             `${colors.yellow}No track is currently playing. No active devices were found.`,
@@ -195,7 +202,8 @@ async function GetCurrentlyPlaying(tokensFilePath) {
       }
       return nothingPlayingSong;
     } else {
-      noActiveDevicesWarning = false; // Set this to false so the "No active devices" warning can print again
+      noActiveDevicesWarning = false;
+      rateLimitWarned = false;
 
       if (verbosity >= 1)
         console.error(
@@ -206,8 +214,29 @@ async function GetCurrentlyPlaying(tokensFilePath) {
       return lastPolledSong ? lastPolledSong : nothingPlayingSong;
     }
   } catch (ex) {
-    if (verbosity >= 1)
+    if (ex.response?.status === 429) {
+      // retry-after is an integer number of seconds
+      const retryAfter = parseInt(ex.response.headers["retry-after"], 10) || 5; // Default to 5 seconds if header is missing
+
+      if (!rateLimitWarned) {
+        rateLimitWarned = true;
+        if (verbosity >= 2)
+          console.warn(
+            `${colors.yellow}Rate limited by Spotify API. Retrying after ${retryAfter} seconds.`,
+            colors.reset,
+          );
+      } else if (verbosity >= 3) {
+        console.warn(
+          `${colors.yellow}Rate limited by Spotify API. Retrying after ${retryAfter} seconds.`,
+          colors.reset,
+        );
+      }
+
+      pauseUntil = Date.now() + retryAfter * 1000;
+    }
+    else if (verbosity >= 1)
       console.error(`${colors.red}Error getting currently playing song:`, ex.message, colors.reset);
+
     return lastPolledSong ? lastPolledSong : nothingPlayingSong;
   }
 }
