@@ -123,7 +123,9 @@ const TimeText = styled.div`
   font-weight: normal;
   font-size: calc(${ART_SIZE} * 0.15);
   letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  text-align: left;
   color: #ffffff;
   text-shadow: 0 calc(${ART_SIZE} * 0.008) calc(${ART_SIZE} * 0.02) rgba(0, 0, 0, 0.6);
 `;
@@ -233,6 +235,30 @@ const formatTime = (ms) => {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
 
+const findWidestDigit = (measurerEl) => {
+  let widestDigit = "0";
+  let widestWidth = -1;
+  for (let d = 0; d <= 9; d++) {
+    measurerEl.textContent = String(d);
+    const width = measurerEl.getBoundingClientRect().width;
+    if (width > widestWidth) {
+      widestWidth = width;
+      widestDigit = String(d);
+    }
+  }
+  return widestDigit;
+};
+
+const measureTimeTextWidth = (measurerEl, durationMs) => {
+  if (!measurerEl) return undefined;
+  const widestDigit = findWidestDigit(measurerEl);
+  const totalSeconds = Math.floor(Math.max(0, durationMs || 0) / 1000);
+  const minuteDigits = Math.max(1, String(Math.floor(totalSeconds / 60)).length);
+  const widest = `${widestDigit.repeat(minuteDigits)}:${widestDigit}${widestDigit}`;
+  measurerEl.textContent = `${widest} / ${widest}`;
+  return measurerEl.getBoundingClientRect().width;
+};
+
 const measureFitFontSize = (measurerEl, containerEl, text) => {
   if (!measurerEl || !containerEl) return undefined;
   measurerEl.textContent = text;
@@ -253,11 +279,19 @@ const Theme = () => {
   const songInfoRef = useRef(null);
   const artistMeasurerRef = useRef(null);
   const songMeasurerRef = useRef(null);
+  const timeMeasurerRef = useRef(null);
+  const [timeTextWidth, setTimeTextWidth] = useState(undefined);
 
   const fitArtistFontSize = (text) =>
     measureFitFontSize(artistMeasurerRef.current, songInfoRef.current, text);
   const fitSongFontSize = (text) =>
     measureFitFontSize(songMeasurerRef.current, songInfoRef.current, text);
+
+  useEffect(() => {
+    const width = measureTimeTextWidth(timeMeasurerRef.current, songData?.duration_ms);
+    if (width !== undefined) setTimeTextWidth(width);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [songData?.duration_ms]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -353,7 +387,7 @@ const Theme = () => {
           <ProgressTrack>
             <ProgressFill $percent={progressPercent} />
           </ProgressTrack>
-          <TimeText>
+          <TimeText style={timeTextWidth !== undefined ? { minWidth: `${timeTextWidth}px` } : undefined}>
             {formatTime(songData?.progress_ms)} / {formatTime(songData?.duration_ms)}
           </TimeText>
         </ProgressRow>
@@ -362,6 +396,7 @@ const Theme = () => {
       <Measurer aria-hidden="true">
         <ArtistText ref={artistMeasurerRef} style={{ position: "absolute" }} />
         <SongText ref={songMeasurerRef} style={{ position: "absolute" }} />
+        <TimeText ref={timeMeasurerRef} style={{ position: "absolute" }} />
       </Measurer>
     </WidgetContainer>
   );
