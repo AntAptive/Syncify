@@ -39,7 +39,7 @@ const CoverArtWrap = styled.div`
   height: ${ART_SIZE};
   overflow: hidden;
   background: #111;
-  filter: drop-shadow(0 calc(${ART_SIZE} * 0.02) calc(${ART_SIZE} * 0.04) rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 calc(${ART_SIZE} * 0.02) calc(${ART_SIZE} * 0.03) rgba(0, 0, 0, 0.85));
 `;
 
 const CoverArt = styled.img`
@@ -74,7 +74,7 @@ const ArtistText = styled.div`
   white-space: nowrap;
   text-align: left;
   color: #ffffff;
-  text-shadow: 0 calc(${ART_SIZE} * 0.02) calc(${ART_SIZE} * 0.04) rgba(0, 0, 0, 0.45);
+  text-shadow: 0 calc(${ART_SIZE} * 0.02) calc(${ART_SIZE} * 0.04) rgba(0, 0, 0, 0.5);
 `;
 
 const SongText = styled.div`
@@ -91,7 +91,7 @@ const SongText = styled.div`
   white-space: nowrap;
   text-align: left;
   color: #ffffff;
-  text-shadow: 0 calc(${ART_SIZE} * 0.02) calc(${ART_SIZE} * 0.04) rgba(0, 0, 0, 0.4);
+  text-shadow: 0 calc(${ART_SIZE} * 0.02) calc(${ART_SIZE} * 0.04) rgba(0, 0, 0, 0.7);
 `;
 
 const ProgressRow = styled.div`
@@ -104,9 +104,10 @@ const ProgressRow = styled.div`
 const ProgressTrack = styled.div`
   flex: 1 1 auto;
   height: calc(${ART_SIZE} * 0.025);
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(45, 45, 45, 0.5);
   border-radius: calc(${ART_SIZE} * 0.0125);
   overflow: hidden;
+  filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.5));
 `;
 
 const ProgressFill = styled.div`
@@ -334,6 +335,8 @@ const Theme = () => {
 
             let artists = "";
             (response.data.artists || []).forEach((artist) => {
+              // If the artist name is already included in the song title, don't repeat it.
+              if (response.data.song?.toLowerCase().includes(artist.name.toLowerCase())) return;
               artists += `${artist.name}, `;
             });
             artists = artists.slice(0, -2);
