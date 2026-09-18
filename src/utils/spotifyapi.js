@@ -32,6 +32,8 @@ let npsInterval = setInterval(() => {
   if (port) {
     nothingPlayingSong = {
       playing: false,
+      progress_ms: 0,
+      duration_ms: 0,
       stopped: true,
       song: "",
       artists: [{ name: "" }],
@@ -182,6 +184,8 @@ async function GetCurrentlyPlaying(tokensFilePath) {
 
       const jsonData = {
         playing: response.data.is_playing,
+        progress_ms: response.data.progress_ms,
+        duration_ms: response.data.item.duration_ms,
         stopped: false,
         song: response.data.item.name,
         artists: response.data.item.artists,
