@@ -238,6 +238,9 @@ async function GetCurrentlyPlaying(tokensFilePath) {
 
       pauseUntil = Date.now() + retryAfter * 1000;
     }
+    else if (ex.response?.status === 500 && verbosity >= 3) {
+      console.error(`${colors.red}Spotify API error (500):`, ex.message, colors.reset);
+    }
     else if (verbosity >= 1)
       console.error(`${colors.red}Error getting currently playing song:`, ex.message, colors.reset);
 
