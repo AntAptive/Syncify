@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import axios from "axios";
 import styled, { keyframes } from "styled-components";
+import songIdentity from "../utils/songIdentity.js";
 
 const FADE_WIDTH = 30;
 
@@ -353,7 +354,7 @@ const Theme = () => {
       );
       if (
         response.data &&
-        JSON.stringify(response.data) !== JSON.stringify(songData)
+        songIdentity(response.data) !== songIdentity(songData)
       ) {
         if (songData !== undefined) {
           if (
