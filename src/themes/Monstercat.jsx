@@ -4,6 +4,31 @@ import styled, { keyframes } from "styled-components";
 
 const TYPE_SPEED_MS = 21;
 
+const CREDIT_KEYWORD = /(?<![\p{L}\p{N}])(remix|mix|edit|vip|rework|bootleg|flip|version|feat\.?|ft\.?|featuring|with|prod\.?)(?![\p{L}\p{N}])/iu;
+const INLINE_FEATURE = /(?<![\p{L}\p{N}])(?:feat\.?|ft\.?|featuring)\s+(.*)$/iu;
+
+const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Drops artists that are already credited in the song title, e.g. the remixer
+// in "Dye - Nitemoves Remix". Only the credit parts of the title (after " - " or
+// inside brackets and containing a keyword like "remix" or "feat", or anything
+// after an unbracketed "feat.") are checked, and the first artist is always kept
+// since it's usually the original artist.
+const filterArtists = (title, artists) => {
+  const segments = [
+    ...(title || "").split(" - ").slice(1),
+    ...[...(title || "").matchAll(/[([]([^)\]]*)[)\]]/g)].map((m) => m[1]),
+  ].filter((segment) => CREDIT_KEYWORD.test(segment));
+  const inlineFeature = (title || "").match(INLINE_FEATURE);
+  if (inlineFeature) segments.push(inlineFeature[1]);
+
+  return artists.filter((artist, index) => {
+    if (index === 0 || !artist.name) return true;
+    const nameRegex = new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(artist.name)}(?![\\p{L}\\p{N}])`, "iu");
+    return !segments.some((segment) => nameRegex.test(segment));
+  });
+};
+
 const blink = keyframes`
   0%, 49% { opacity: 1; }
   50%, 100% { opacity: 0; }
@@ -333,14 +358,8 @@ const Theme = () => {
           setTimeout(() => {
             setSongData(response.data);
 
-            let artists = "";
-            (response.data.artists || []).forEach((artist) => {
-              // If the artist name is already included in the song title, don't repeat it.
-              if (response.data.song?.toLowerCase().includes(artist.name.toLowerCase())) return;
-              artists += `${artist.name}, `;
-            });
-            artists = artists.slice(0, -2);
-            setAllArtists(artists);
+            const artists = filterArtists(response.data.song, response.data.artists || []);
+            setAllArtists(artists.map((artist) => artist.name).join(", "));
 
             setCoverOpacity(1);
           }, 200);
